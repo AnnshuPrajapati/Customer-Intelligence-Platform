@@ -1,0 +1,167 @@
+[
+  {
+    "id": "review_001",
+    "customer_id": "cust_123",
+    "product_id": "prod_456",
+    "rating": 4,
+    "title": "Great product but shipping was slow",
+    "review_text": "The product quality is excellent and works as advertised. However, shipping took over two weeks which was disappointing. Customer service was helpful when I inquired about the delay.",
+    "date": "2024-01-15",
+    "source": "amazon",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_002",
+    "customer_id": "cust_789",
+    "product_id": "prod_456",
+    "rating": 2,
+    "title": "Not worth the price",
+    "review_text": "While the build quality seems decent, the performance doesn't match the premium price point. I've seen similar products for half the cost that work just as well. Disappointed with this purchase.",
+    "date": "2024-01-14",
+    "source": "amazon",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_003",
+    "customer_id": "cust_456",
+    "product_id": "prod_456",
+    "rating": 5,
+    "title": "Exceeded my expectations",
+    "review_text": "This product completely exceeded my expectations. The setup was straightforward, the features are comprehensive, and it integrates seamlessly with my existing workflow. Worth every penny!",
+    "date": "2024-01-13",
+    "source": "bestbuy",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_004",
+    "customer_id": "cust_101",
+    "product_id": "prod_456",
+    "rating": 3,
+    "title": "Good but could be better",
+    "review_text": "The product does what it says, but the user interface feels outdated. Some features are hidden deep in menus. It's functional but not intuitive. Customer support was responsive when I had questions.",
+    "date": "2024-01-12",
+    "source": "amazon",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_005",
+    "customer_id": "cust_202",
+    "product_id": "prod_456",
+    "rating": 1,
+    "title": "Complete waste of money",
+    "review_text": "This product is defective right out of the box. It doesn't work as described, and trying to get a refund has been a nightmare. The return process is complicated and customer service is unhelpful. Do not buy!",
+    "date": "2024-01-11",
+    "source": "walmart",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_006",
+    "customer_id": "cust_303",
+    "product_id": "prod_456",
+    "rating": 5,
+    "title": "Perfect for my needs",
+    "review_text": "After researching several options, this was the perfect choice for my requirements. The documentation is excellent, setup was easy, and it performs flawlessly. Highly recommended for professionals.",
+    "date": "2024-01-10",
+    "source": "newegg",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_007",
+    "customer_id": "cust_404",
+    "product_id": "prod_456",
+    "rating": 4,
+    "title": "Solid product with minor issues",
+    "review_text": "Overall a solid product that meets my needs. There are a few minor bugs that need to be addressed, but the core functionality is excellent. The company seems responsive to feedback, so I'm hopeful for updates.",
+    "date": "2024-01-09",
+    "source": "amazon",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_008",
+    "customer_id": "cust_505",
+    "product_id": "prod_456",
+    "rating": 3,
+    "title": "Average experience",
+    "review_text": "This is an average product. It works as expected but doesn't stand out in any particular way. The price is reasonable for what you get. Would buy again if I needed it, but wouldn't go out of my way to recommend it.",
+    "date": "2024-01-08",
+    "source": "target",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_009",
+    "customer_id": "cust_606",
+    "product_id": "prod_456",
+    "rating": 5,
+    "title": "Outstanding value and quality",
+    "review_text": "This product offers outstanding value for money. The quality is top-notch, the features are comprehensive, and the performance is exceptional. I've tried cheaper alternatives and this one is clearly superior. Five stars!",
+    "date": "2024-01-07",
+    "source": "bestbuy",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_010",
+    "customer_id": "cust_707",
+    "product_id": "prod_456",
+    "rating": 2,
+    "title": "Poor documentation",
+    "review_text": "The product itself might be decent, but the documentation is terrible. I spent hours trying to figure out basic features. The online resources are outdated and the support articles don't match the current version. Very frustrating experience.",
+    "date": "2024-01-06",
+    "source": "amazon",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_011",
+    "customer_id": "cust_808",
+    "product_id": "prod_456",
+    "rating": 4,
+    "title": "Great features, learning curve",
+    "review_text": "This product has great features and capabilities. There's definitely a learning curve, but once you get past that, it's very powerful. The interface takes some getting used to, but the functionality makes it worthwhile.",
+    "date": "2024-01-05",
+    "source": "bhphotovideo",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_012",
+    "customer_id": "cust_909",
+    "product_id": "prod_456",
+    "rating": 1,
+    "title": "Compatibility issues",
+    "review_text": "Doesn't work with my system at all. The compatibility requirements weren't clearly stated, and now I'm stuck with a product I can't use. Very disappointed with the lack of transparency about system requirements.",
+    "date": "2024-01-04",
+    "source": "amazon",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_013",
+    "customer_id": "cust_111",
+    "product_id": "prod_456",
+    "rating": 5,
+    "title": "Excellent customer service",
+    "review_text": "Had an issue with my initial setup, but the customer service team was outstanding. They walked me through the entire process and even followed up to make sure everything was working. The product itself is great too!",
+    "date": "2024-01-03",
+    "source": "costco",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_014",
+    "customer_id": "cust_222",
+    "product_id": "prod_456",
+    "rating": 3,
+    "title": "Decent but overpriced",
+    "review_text": "The product is decent and does what it claims to do. However, I feel it's overpriced for the features provided. There are more affordable alternatives that offer similar functionality. It's okay, but not great.",
+    "date": "2024-01-02",
+    "source": "amazon",
+    "verified_purchase": true
+  },
+  {
+    "id": "review_015",
+    "customer_id": "cust_333",
+    "product_id": "prod_456",
+    "rating": 4,
+    "title": "Good upgrade from previous version",
+    "review_text": "Upgraded from the previous version and it's a noticeable improvement. The new features are useful, performance is better, and the interface is more polished. Happy with the upgrade, though there are still some areas for improvement.",
+    "date": "2024-01-01",
+    "source": "bestbuy",
+    "verified_purchase": true
+  }
+]

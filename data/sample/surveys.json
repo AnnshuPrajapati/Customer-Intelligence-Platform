@@ -1,0 +1,152 @@
+[
+  {
+    "id": "survey_001",
+    "customer_id": "cust_123",
+    "survey_type": "post_purchase",
+    "responses": {
+      "overall_satisfaction": 4,
+      "likely_to_recommend": 4,
+      "value_for_money": 3,
+      "product_quality": 5,
+      "shipping_speed": 2,
+      "customer_service": 4
+    },
+    "comments": "Good product but shipping was slower than expected. Overall happy with the purchase.",
+    "date": "2024-01-16"
+  },
+  {
+    "id": "survey_002",
+    "customer_id": "cust_789",
+    "survey_type": "satisfaction",
+    "responses": {
+      "overall_satisfaction": 2,
+      "likely_to_recommend": 1,
+      "value_for_money": 2,
+      "product_quality": 3,
+      "shipping_speed": 1,
+      "customer_service": 2
+    },
+    "comments": "The product quality is mediocre and overpriced. Shipping was extremely slow and customer service was not helpful when I complained.",
+    "date": "2024-01-15"
+  },
+  {
+    "id": "survey_003",
+    "customer_id": "cust_456",
+    "survey_type": "feedback",
+    "responses": {
+      "overall_satisfaction": 5,
+      "likely_to_recommend": 5,
+      "value_for_money": 5,
+      "product_quality": 5,
+      "shipping_speed": 4,
+      "customer_service": 5
+    },
+    "comments": "This is exactly what I needed! The product works perfectly and the quality is outstanding. Customer service was exceptional when I had questions.",
+    "date": "2024-01-14"
+  },
+  {
+    "id": "survey_004",
+    "customer_id": "cust_101",
+    "survey_type": "post_purchase",
+    "responses": {
+      "overall_satisfaction": 3,
+      "likely_to_recommend": 3,
+      "value_for_money": 3,
+      "product_quality": 4,
+      "shipping_speed": 3,
+      "customer_service": 4
+    },
+    "comments": "The product is decent but the interface could be more intuitive. It's functional but takes time to learn. Customer service was helpful when I called.",
+    "date": "2024-01-13"
+  },
+  {
+    "id": "survey_005",
+    "customer_id": "cust_202",
+    "survey_type": "feedback",
+    "responses": {
+      "overall_satisfaction": 1,
+      "likely_to_recommend": 1,
+      "value_for_money": 1,
+      "product_quality": 1,
+      "shipping_speed": 1,
+      "customer_service": 1
+    },
+    "comments": "Terrible experience from start to finish. Product arrived damaged, return process was complicated, and customer service was rude and unhelpful. Never buying from this company again.",
+    "date": "2024-01-12"
+  },
+  {
+    "id": "survey_006",
+    "customer_id": "cust_303",
+    "survey_type": "satisfaction",
+    "responses": {
+      "overall_satisfaction": 4,
+      "likely_to_recommend": 4,
+      "value_for_money": 4,
+      "product_quality": 4,
+      "shipping_speed": 5,
+      "customer_service": 4
+    },
+    "comments": "Very satisfied with the product. Fast shipping was a pleasant surprise. The quality meets my expectations and the price is fair.",
+    "date": "2024-01-11"
+  },
+  {
+    "id": "survey_007",
+    "customer_id": "cust_404",
+    "survey_type": "feedback",
+    "responses": {
+      "overall_satisfaction": 3,
+      "likely_to_recommend": 2,
+      "value_for_money": 2,
+      "product_quality": 4,
+      "shipping_speed": 3,
+      "customer_service": 3
+    },
+    "comments": "Product quality is good but I feel it's overpriced. There are cheaper alternatives that offer similar features. The shipping was on time though.",
+    "date": "2024-01-10"
+  },
+  {
+    "id": "survey_008",
+    "customer_id": "cust_505",
+    "survey_type": "post_purchase",
+    "responses": {
+      "overall_satisfaction": 4,
+      "likely_to_recommend": 5,
+      "value_for_money": 4,
+      "product_quality": 4,
+      "shipping_speed": 4,
+      "customer_service": 4
+    },
+    "comments": "Great product that solved my problem perfectly. I would definitely recommend it to colleagues. The only minor issue was a small learning curve.",
+    "date": "2024-01-09"
+  },
+  {
+    "id": "survey_009",
+    "customer_id": "cust_606",
+    "survey_type": "satisfaction",
+    "responses": {
+      "overall_satisfaction": 2,
+      "likely_to_recommend": 2,
+      "value_for_money": 3,
+      "product_quality": 2,
+      "shipping_speed": 4,
+      "customer_service": 2
+    },
+    "comments": "The product works but has some bugs that need to be fixed. Documentation could be better. Customer service took too long to respond to my questions.",
+    "date": "2024-01-08"
+  },
+  {
+    "id": "survey_010",
+    "customer_id": "cust_707",
+    "survey_type": "feedback",
+    "responses": {
+      "overall_satisfaction": 5,
+      "likely_to_recommend": 5,
+      "value_for_money": 5,
+      "product_quality": 5,
+      "shipping_speed": 5,
+      "customer_service": 5
+    },
+    "comments": "Outstanding experience! The product exceeded my expectations in every way. Perfect quality, fast shipping, and excellent customer service. Will definitely buy again.",
+    "date": "2024-01-07"
+  }
+]
