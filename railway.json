@@ -1,10 +1,11 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "NIXPACKS",
+    "buildCommand": "pip install -r requirements.txt"
   },
   "deploy": {
-    "startCommand": "streamlit run app.py --server.port $PORT --server.address 0.0.0.0",
+    "startCommand": "streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true",
     "healthcheckPath": "/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
@@ -15,6 +16,10 @@
       "fromSecret": "GOOGLE_API_KEY"
     },
     "LOG_LEVEL": "INFO",
-    "MAX_ITERATIONS": "3"
+    "MAX_ITERATIONS": "3",
+    "STREAMLIT_SERVER_PORT": "$PORT",
+    "STREAMLIT_SERVER_ADDRESS": "0.0.0.0",
+    "STREAMLIT_SERVER_HEADLESS": "true",
+    "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "false"
   }
 }
