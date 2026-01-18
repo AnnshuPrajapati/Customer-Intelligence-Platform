@@ -113,12 +113,19 @@ class CustomerIntelligenceOrchestrator:
 
         # Initialize all agents
         self.console.print("[dim]Initializing agents...[/dim]")
+        self.data_collector = DataCollectorAgent()
+        self.sentiment_analyzer = SentimentAnalyzerAgent()
+        self.pattern_detector = PatternDetectorAgent()
+        self.opportunity_finder = OpportunityFinderAgent()
+        self.strategy_creator = StrategyCreatorAgent()
+
+        # Also store in dictionary for consistency
         self.agents = {
-            "data_collector": DataCollectorAgent(),
-            "sentiment_analyzer": SentimentAnalyzerAgent(),
-            "pattern_detector": PatternDetectorAgent(),
-            "opportunity_finder": OpportunityFinderAgent(),
-            "strategy_creator": StrategyCreatorAgent()
+            "data_collector": self.data_collector,
+            "sentiment_analyzer": self.sentiment_analyzer,
+            "pattern_detector": self.pattern_detector,
+            "opportunity_finder": self.opportunity_finder,
+            "strategy_creator": self.strategy_creator
         }
 
         # Build the workflow graph
