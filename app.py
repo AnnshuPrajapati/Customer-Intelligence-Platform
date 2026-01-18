@@ -40,12 +40,11 @@ def main():
         )
 
         if st.button("🚀 Run Analysis", type="primary"):
-            # Clear previous analysis state only
-            st.session_state.analysis_complete = False
-            if 'results' in st.session_state:
-                del st.session_state.results
-            if 'evaluation' in st.session_state:
-                del st.session_state.evaluation
+            # Clear all previous analysis data
+            keys_to_clear = ['analysis_complete', 'results', 'evaluation', 'last_company', 'last_product']
+            for key in keys_to_clear:
+                if key in st.session_state:
+                    del st.session_state[key]
 
             run_analysis(company, product, data_sources)
 
@@ -289,9 +288,6 @@ def run_analysis(company: str, product: str, data_sources: list):
         # Show success message
         st.success(f"✅ Analysis completed successfully for **{company} - {product}**!")
         st.balloons()  # Celebration effect
-        
-        # Auto-rerun to show results
-        st.rerun()
 
     except ImportError as e:
         st.error(f"❌ Import Error: {str(e)}")

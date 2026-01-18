@@ -112,7 +112,7 @@ class OpportunityFinderAgent(BaseAgent):
             self.console.print(f"Analyzing [green]{len(patterns)}[/green] patterns for opportunities...")
 
             # Find opportunities using Claude
-            opportunity_analysis = self._find_opportunities(patterns, sentiment_results, trends)
+            opportunity_analysis = self._find_opportunities(patterns, sentiment_results, trends, state)
 
             # Structure and rank opportunities
             opportunities = self._structure_opportunities(opportunity_analysis)
@@ -137,7 +137,8 @@ class OpportunityFinderAgent(BaseAgent):
 
     def _find_opportunities(self, patterns: List[Dict[str, Any]],
                           sentiment_context: Dict[str, Any],
-                          trends: Dict[str, Any]) -> str:
+                          trends: Dict[str, Any],
+                          state: Dict[str, Any]) -> str:
         """
         Send pattern data to Claude for opportunity identification and analysis.
 
@@ -192,7 +193,13 @@ class OpportunityFinderAgent(BaseAgent):
         Provide comprehensive opportunity analysis in the specified JSON format.
         """
 
-        return self.execute(task, {"opportunity_context": context})
+        # Include company and product info for mock response generation
+        full_context = {
+            "opportunity_context": context,
+            "company_name": state.get("company_name", "Unknown Company"),
+            "product_name": state.get("product_name", "Unknown Product")
+        }
+        return self.execute(task, full_context)
 
     def _structure_opportunities(self, analysis_response: str) -> List[Dict[str, Any]]:
         """

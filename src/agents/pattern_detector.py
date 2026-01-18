@@ -108,7 +108,7 @@ class PatternDetectorAgent(BaseAgent):
             self.console.print(f"Analyzing patterns in [green]{len(raw_data)}[/green] feedback items...")
 
             # Detect patterns using Claude
-            pattern_analysis = self._detect_patterns(raw_data, sentiment_results)
+            pattern_analysis = self._detect_patterns(raw_data, sentiment_results, state)
 
             # Structure the results
             structured_patterns = self._structure_patterns(pattern_analysis)
@@ -134,7 +134,7 @@ class PatternDetectorAgent(BaseAgent):
             self.console.print(f"[bold red]❌ Error: {error_msg}[/bold red]")
             return state
 
-    def _detect_patterns(self, feedback_data: List[Dict[str, Any]], sentiment_context: Dict[str, Any]) -> str:
+    def _detect_patterns(self, feedback_data: List[Dict[str, Any]], sentiment_context: Dict[str, Any], state: Dict[str, Any]) -> str:
         """
         Send feedback data to Claude for comprehensive pattern analysis.
 
@@ -178,7 +178,13 @@ class PatternDetectorAgent(BaseAgent):
         Provide detailed pattern analysis in the specified JSON format.
         """
 
-        return self.execute(task, {"pattern_context": context})
+        # Include company and product info for mock response generation
+        full_context = {
+            "pattern_context": context,
+            "company_name": state.get("company_name", "Unknown Company"),
+            "product_name": state.get("product_name", "Unknown Product")
+        }
+        return self.execute(task, full_context)
 
     def _extract_text_from_feedback(self, feedback_item: Dict[str, Any]) -> str:
         """

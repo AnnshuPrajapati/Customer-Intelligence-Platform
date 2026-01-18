@@ -153,7 +153,13 @@ class SentimentAnalyzerAgent(BaseAgent):
         Provide detailed analysis in the specified JSON format.
         """
 
-        return self.execute(task, {"feedback_context": context})
+        # Include company and product info for mock response generation
+        full_context = {
+            "feedback_context": context,
+            "company_name": state.get("company_name", "Unknown Company"),
+            "product_name": state.get("product_name", "Unknown Product")
+        }
+        return self.execute(task, full_context)
 
     def _extract_text_from_feedback(self, feedback_item: Dict[str, Any]) -> str:
         """

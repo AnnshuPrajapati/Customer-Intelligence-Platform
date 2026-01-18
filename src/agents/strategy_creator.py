@@ -123,7 +123,7 @@ class StrategyCreatorAgent(BaseAgent):
 
             # Create strategy using Claude
             try:
-                strategy_response = self._create_strategy(all_insights)
+                strategy_response = self._create_strategy(all_insights, state)
             except Exception as e:
                 self.logger.error(f"Failed to create strategy: {e}")
                 # Fallback: create basic recommendations
@@ -215,7 +215,7 @@ class StrategyCreatorAgent(BaseAgent):
                            (state.get("sentiment_results") or state.get("patterns") or state.get("opportunities")))
         }
 
-    def _create_strategy(self, insights: Dict[str, Any]) -> str:
+    def _create_strategy(self, insights: Dict[str, Any], state: Dict[str, Any]) -> str:
         """
         Send comprehensive insights to Claude for strategic analysis.
 
@@ -278,7 +278,13 @@ class StrategyCreatorAgent(BaseAgent):
         Provide comprehensive strategic analysis in the specified JSON format.
         """
 
-        return self.execute(task, {"strategy_context": full_context})
+        # Include company and product info for mock response generation
+        execute_context = {
+            "strategy_context": full_context,
+            "company_name": state.get("company_name", "Unknown Company"),
+            "product_name": state.get("product_name", "Unknown Product")
+        }
+        return self.execute(task, execute_context)
 
     def _structure_strategy(self, response: str) -> tuple[List[Dict[str, Any]], str]:
         """
