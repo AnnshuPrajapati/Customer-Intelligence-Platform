@@ -278,6 +278,7 @@ class BaseAgent(ABC):
     def _generate_mock_response(self, task: str, context: Dict[str, Any]) -> str:
         """
         Generate realistic mock responses when API is not available.
+        Responses vary based on company and product context.
 
         Args:
             task: The task description
@@ -287,120 +288,236 @@ class BaseAgent(ABC):
             Mock response string
         """
         agent_name = self.name
+        company = context.get('company_name', 'Unknown Company')
+        product = context.get('product_name', 'Unknown Product')
+
+        # Generate company-specific variations
+        import random
+        company_hash = hash(company + product) % 1000
+        random.seed(company_hash)
 
         if agent_name == "data_collector":
-            return '{"total_records": 45, "data_sources_processed": 3, "average_rating": 3.8}'
+            # Vary data collection based on company
+            base_records = 35 + (company_hash % 15)  # 35-50 records
+            rating_variation = (company_hash % 20 - 10) / 100  # ±0.1 variation
+            avg_rating = 3.5 + rating_variation
+
+            return f'{{"total_records": {base_records}, "data_sources_processed": 3, "average_rating": {avg_rating:.1f}}}'
 
         elif agent_name == "sentiment_analyzer":
-            return '''{
-                "overall_sentiment": "mixed",
-                "sentiment_score": 0.2,
-                "emotions": {
-                    "satisfaction": 0.4,
-                    "frustration": 0.3,
-                    "delight": 0.2,
-                    "confusion": 0.1
-                },
-                "key_topics": ["performance", "user_interface", "pricing"],
+            # Vary sentiment based on company/product
+            sentiment_options = ["mixed", "positive", "negative"]
+            sentiment = sentiment_options[company_hash % len(sentiment_options)]
+
+            score_variation = (company_hash % 40 - 20) / 100  # ±0.2 variation
+            score = 0.2 + score_variation
+
+            # Company-specific topics
+            topic_sets = [
+                ["performance", "user_interface", "pricing"],
+                ["customer_support", "features", "reliability"],
+                ["mobile_experience", "speed", "usability"],
+                ["integration", "documentation", "scalability"]
+            ]
+            topics = topic_sets[company_hash % len(topic_sets)]
+
+            # Vary emotions
+            emotions = {
+                "satisfaction": 0.3 + (company_hash % 30) / 100,
+                "frustration": 0.2 + (company_hash % 25) / 100,
+                "delight": 0.15 + (company_hash % 20) / 100,
+                "confusion": 0.1 + (company_hash % 15) / 100
+            }
+
+            summary_templates = [
+                f"Customer feedback shows {sentiment} sentiments with moderate satisfaction levels. Key concerns include {topics[0]} and {topics[1]}, while {topics[2]} receives generally positive feedback.",
+                f"Analysis of {company}'s {product} shows {sentiment} overall sentiment. Customers appreciate {topics[2]} but struggle with {topics[0]} and {topics[1]} issues.",
+                f"Feedback for {product} indicates {sentiment} sentiment with focus on {topics[0]}, {topics[1]}, and {topics[2]} aspects of the product."
+            ]
+            summary = summary_templates[company_hash % len(summary_templates)]
+
+            return f'''{{
+                "overall_sentiment": "{sentiment}",
+                "sentiment_score": {score:.1f},
+                "emotions": {json.dumps(emotions)},
+                "key_topics": {json.dumps(topics)},
                 "confidence": 0.75,
-                "analysis_summary": "Customer feedback shows mixed sentiments with moderate satisfaction levels. Key concerns include performance and user interface, while pricing receives generally positive feedback."
-            }'''
+                "analysis_summary": "{summary}"
+            }}'''
 
         elif agent_name == "pattern_detector":
-            return '''{
-                "patterns": [
-                    {
-                        "pattern_type": "pain_point",
-                        "description": "Customers frequently report slow loading times and performance issues",
-                        "frequency": 12,
-                        "severity": "high",
-                        "examples": ["App takes forever to load", "Performance is terrible on mobile"],
-                        "business_impact": "High user frustration leading to potential churn",
-                        "impact_score": 8.5
-                    },
-                    {
-                        "pattern_type": "feature_request",
-                        "description": "Multiple requests for dark mode and mobile app improvements",
-                        "frequency": 8,
-                        "severity": "medium",
-                        "examples": ["Please add dark mode", "Mobile app needs better navigation"],
-                        "business_impact": "Enhancing user experience and modern features",
-                        "impact_score": 6.2
-                    }
+            # Vary patterns based on company
+            pattern_types = ["pain_point", "feature_request", "bug_report", "usability_issue"]
+            pattern1_type = pattern_types[company_hash % len(pattern_types)]
+            pattern2_type = pattern_types[(company_hash + 1) % len(pattern_types)]
+
+            # Company-specific pattern descriptions
+            pattern_descriptions = {
+                "pain_point": [
+                    f"Customers frequently report slow loading times and performance issues with {product}",
+                    f"Users struggle with complex navigation and confusing interface in {product}",
+                    f"Pricing concerns and value proposition questions for {company}'s {product}"
+                ],
+                "feature_request": [
+                    f"Multiple requests for mobile app improvements and responsive design for {product}",
+                    f"Customers want better integration options and API access for {product}",
+                    f"Feature requests for advanced analytics and reporting in {product}"
+                ],
+                "bug_report": [
+                    f"Frequent crash reports and stability issues in {product}",
+                    f"Data sync problems and consistency issues with {product}",
+                    f"Login and authentication problems reported for {product}"
+                ],
+                "usability_issue": [
+                    f"Complex user interface causing confusion with {product}",
+                    f"Learning curve too steep for new users of {product}",
+                    f"Mobile responsiveness issues with {product}"
                 ]
-            }'''
+            }
+
+            pattern1_desc = pattern_descriptions[pattern1_type][company_hash % len(pattern_descriptions[pattern1_type])]
+            pattern2_desc = pattern_descriptions[pattern2_type][(company_hash + 1) % len(pattern_descriptions[pattern2_type])]
+
+            freq1 = 8 + (company_hash % 10)  # 8-18
+            freq2 = 6 + ((company_hash + 3) % 8)  # 6-14
+
+            return f'''{{
+                "patterns": [
+                    {{
+                        "pattern_type": "{pattern1_type}",
+                        "description": "{pattern1_desc}",
+                        "frequency": {freq1},
+                        "severity": "high",
+                        "examples": ["Example issue 1", "Example issue 2"],
+                        "business_impact": "Significant user impact",
+                        "impact_score": {7.5 + (company_hash % 20) / 10:.1f}
+                    }},
+                    {{
+                        "pattern_type": "{pattern2_type}",
+                        "description": "{pattern2_desc}",
+                        "frequency": {freq2},
+                        "severity": "medium",
+                        "examples": ["Feature request 1", "Feature request 2"],
+                        "business_impact": "Enhancement opportunity",
+                        "impact_score": {5.0 + (company_hash % 30) / 10:.1f}
+                    }}
+                ]
+            }}'''
 
         elif agent_name == "opportunity_finder":
-            return '''{
-                "opportunities": [
-                    {
-                        "title": "Performance Optimization Initiative",
-                        "description": "Address loading time and performance complaints through targeted optimizations",
-                        "category": "technical",
-                        "priority": "high",
-                        "impact_score": 9,
-                        "effort_estimate": "medium",
-                        "timeline": "short-term",
-                        "supporting_data": ["performance complaints", "loading time feedback"],
-                        "expected_outcome": "Improved user satisfaction and reduced churn",
-                        "success_metrics": ["page load time reduction", "user satisfaction increase"],
-                        "priority_score": 4.5
-                    },
-                    {
-                        "title": "Mobile Experience Enhancement",
-                        "description": "Improve mobile app navigation and user interface based on feedback",
-                        "category": "product",
-                        "priority": "medium",
-                        "impact_score": 7,
-                        "effort_estimate": "medium",
-                        "timeline": "short-term",
-                        "supporting_data": ["mobile navigation issues", "UI improvement requests"],
-                        "expected_outcome": "Better mobile user experience and engagement",
-                        "success_metrics": ["mobile session duration", "app store ratings"],
-                        "priority_score": 3.5
-                    }
+            # Generate opportunities based on detected patterns
+            patterns = context.get('patterns', [])
+            if not patterns:
+                patterns = [
+                    {"pattern_type": "pain_point", "description": "Performance issues"},
+                    {"pattern_type": "feature_request", "description": "Mobile improvements"}
                 ]
-            }'''
+
+            opportunities = []
+            for i, pattern in enumerate(patterns[:2]):  # Use up to 2 patterns
+                if pattern["pattern_type"] == "pain_point":
+                    title = "Performance Optimization Initiative"
+                    description = f"Address {pattern['description'].lower()} through targeted optimizations"
+                    category = "technical"
+                    priority = "high"
+                    impact = 8 + (company_hash % 3)  # 8-10
+                elif pattern["pattern_type"] == "feature_request":
+                    title = "Feature Enhancement Program"
+                    description = f"Implement requested {pattern['description'].lower()} to improve user experience"
+                    category = "product"
+                    priority = "medium"
+                    impact = 6 + (company_hash % 3)  # 6-8
+                elif pattern["pattern_type"] == "bug_report":
+                    title = "Stability Improvement Project"
+                    description = f"Fix reported {pattern['description'].lower()} to improve reliability"
+                    category = "technical"
+                    priority = "high"
+                    impact = 7 + (company_hash % 4)  # 7-10
+                else:
+                    title = "User Experience Enhancement"
+                    description = f"Improve {pattern['description'].lower()} based on user feedback"
+                    category = "product"
+                    priority = "medium"
+                    impact = 5 + (company_hash % 4)  # 5-8
+
+                opportunities.append({
+                    "title": title,
+                    "description": description,
+                    "category": category,
+                    "priority": priority,
+                    "impact_score": impact,
+                    "effort_estimate": "medium",
+                    "timeline": "short-term",
+                    "supporting_data": [pattern["description"][:50] + "..."],
+                    "expected_outcome": f"Improved user experience for {company}'s {product}",
+                    "success_metrics": ["user satisfaction", "engagement metrics"],
+                    "priority_score": impact / 2
+                })
+
+            return json.dumps({"opportunities": opportunities})
 
         elif agent_name == "strategy_creator":
-            return '''{
-                "recommendations": [
-                    {
-                        "category": "technical",
-                        "action": "Implement performance optimization plan focusing on loading times",
-                        "rationale": "Performance issues are the most frequent complaint and highest impact area",
-                        "expected_impact": "Reduce user frustration and improve retention rates",
-                        "timeline": "immediate",
-                        "priority": 9,
-                        "effort_level": "medium",
-                        "success_metrics": ["page load time < 2s", "user satisfaction > 4.0"],
-                        "dependencies": ["engineering team availability"],
-                        "risks": ["complex technical challenges"],
-                        "owner": "Engineering Team"
-                    },
-                    {
-                        "category": "product",
-                        "action": "Launch mobile app redesign project",
-                        "rationale": "Mobile experience feedback indicates significant usability issues",
-                        "expected_impact": "Improve mobile user engagement and satisfaction",
-                        "timeline": "short-term",
-                        "priority": 7,
-                        "effort_level": "high",
-                        "success_metrics": ["mobile retention rate", "app store rating improvement"],
-                        "dependencies": ["design team resources", "user testing"],
-                        "risks": ["scope creep", "timeline delays"],
-                        "owner": "Product Team"
-                    }
-                ],
-                "executive_summary": "Customer intelligence analysis reveals that performance optimization and mobile experience improvements are critical priorities. The data shows consistent feedback about slow loading times and mobile usability issues. Implementing these recommendations will address the most impactful customer pain points and drive significant improvements in user satisfaction and retention.",
-                "implementation_roadmap": {
-                    "phase_1_immediate": ["Performance audit and optimization plan"],
-                    "phase_2_short_term": ["Mobile redesign kickoff", "Performance improvements deployment"],
-                    "phase_3_long_term": ["Advanced mobile features", "Performance monitoring system"],
-                    "key_milestones": ["Performance improvements live", "Mobile redesign completed"],
-                    "resource_requirements": ["Engineering team", "Design team", "QA resources"]
-                }
-            }'''
+            # Generate strategy based on patterns and opportunities
+            patterns = context.get('patterns', [])
+            opportunities = context.get('opportunities', [])
+
+            recommendations = []
+            for i, opp in enumerate(opportunities[:2]):  # Use up to 2 opportunities
+                priority = 8 + (company_hash % 3) - i  # High priority for first, slightly lower for second
+                timeline_options = ["immediate", "short-term", "medium-term"]
+                timeline = timeline_options[(company_hash + i) % len(timeline_options)]
+
+                category = opp.get('category', 'technical')
+                action = opp.get('title', 'Improvement initiative')
+                rationale = opp.get('description', 'Based on customer feedback analysis')
+
+                if category == "technical":
+                    owner = "Engineering Team"
+                    dependencies = ["engineering team availability", "technical resources"]
+                    risks = ["complex technical challenges", "integration issues"]
+                    metrics = ["performance metrics", "user satisfaction scores"]
+                else:
+                    owner = "Product Team"
+                    dependencies = ["design team resources", "user research"]
+                    risks = ["scope creep", "timeline delays"]
+                    metrics = ["user engagement", "feature adoption rates"]
+
+                recommendations.append({
+                    "category": category,
+                    "action": f"Implement {action.lower()} for {product}",
+                    "rationale": f"{rationale} - critical feedback from {company} customers",
+                    "expected_impact": opp.get('expected_outcome', 'Improve user experience'),
+                    "timeline": timeline,
+                    "priority": priority,
+                    "effort_level": "medium",
+                    "success_metrics": metrics,
+                    "dependencies": dependencies,
+                    "risks": risks,
+                    "owner": owner
+                })
+
+            # Generate company-specific executive summary
+            summary_templates = [
+                f"Customer intelligence analysis for {company}'s {product} reveals critical priorities in performance and user experience. The data shows consistent feedback about key issues that need immediate attention. Implementing these recommendations will address the most impactful customer pain points.",
+                f"Analysis of {company} customer feedback indicates that {product} requires focused improvements in user experience and technical performance. The insights provide clear direction for enhancing customer satisfaction and driving business growth.",
+                f"Strategic review of {product} feedback shows opportunities for significant improvements in user satisfaction and product quality. The recommended actions prioritize high-impact changes that will directly address customer needs."
+            ]
+            executive_summary = summary_templates[company_hash % len(summary_templates)]
+
+            # Generate implementation roadmap
+            roadmap = {
+                "phase_1_immediate": ["Critical issue assessment", "Quick wins implementation"],
+                "phase_2_short_term": [f"{product} core improvements", "User feedback integration"],
+                "phase_3_long_term": ["Advanced features", "Scalability enhancements"],
+                "key_milestones": ["Initial improvements deployed", "Major updates completed"],
+                "resource_requirements": ["Engineering team", "Product team", "Design resources"]
+            }
+
+            return json.dumps({
+                "recommendations": recommendations,
+                "executive_summary": executive_summary,
+                "implementation_roadmap": roadmap
+            })
 
         else:
             return f"Mock response for {agent_name}: Task completed successfully with sample data."
