@@ -3,18 +3,12 @@
 # If false, makes your Streamlit script run as a module.
 developmentMode = false
 
-# Allows you to type a variable or string by itself in a single line of Python code to write it to the app.
-dataFrameSerialization = "legacy"
-
 [logger]
 
 # Level of logging: 'error', 'warning', 'info', 'debug'.
 level = "info"
 
 [client]
-
-# Whether to enable st.cache.
-caching = true
 
 # If false, will attempt to open a new tab or window every time Streamlit is
 # called. If true, will only open a new tab the first time Streamlit is called.
@@ -50,13 +44,15 @@ runOnSave = false
 address = "0.0.0.0"
 
 # The port where the server will listen for client and browser connections.
+# Note: Railway will override this with $PORT environment variable
 port = 8501
 
 # The base path for the URL where Streamlit should be reachable from.
 baseUrlPath = ""
 
-# Enables support for Cross-Origin Request Sharing (CORS) protection, for added security.
-enableCORS = false
+# Enables support for Cross-Origin Request Sharing (CORS) protection.
+# Note: Must be true when enableXsrfProtection is true
+enableCORS = true
 
 # Enables support for Cross-Site Request Forgery (XSRF) protection, for added security.
 enableXsrfProtection = true
@@ -69,3 +65,8 @@ maxMessageSize = 200
 
 # Enables support for websocket compression.
 enableWebsocketCompression = false
+
+[browser]
+
+# Whether to automatically open the browser when Streamlit is started.
+gatherUsageStats = false
