@@ -218,8 +218,16 @@ def run_analysis(company: str, product: str, data_sources: list):
         # Run analysis
         results = orchestrator.run(company, product, data_sources)
 
+        # Debug: Check what orchestrator returned
+        print(f"DEBUG: orchestrator.run() returned type: {type(results)}")
+        print(f"DEBUG: orchestrator.run() returned value: {results}")
+
         status_text.text("Evaluating results...")
         progress_bar.progress(80)
+
+        # Debug: Check results type
+        print(f"DEBUG: results type: {type(results)}")
+        print(f"DEBUG: results value: {results}")
 
         # Evaluate results
         evaluation = evaluator.evaluate_workflow_run(results)
