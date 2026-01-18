@@ -1,14 +1,12 @@
 # Customer Intelligence Platform 🚀
 
-[![Live Demo](https://img.shields.io/badge/🚀_Try_It_Live-Deployed-blue?style=for-the-badge&logo=streamlit)](https://customer-intelligence-platform.up.railway.app/)
-
 > **Transform 2-3 weeks of manual analysis into 90 seconds of AI-powered insights. Save $50K vs consulting fees.**
 
-*A production-ready multi-agent AI system that generates strategic business recommendations from customer feedback. Built for enterprise scale with 99.9% uptime.*
+*A multi-agent system built with LangGraph and AI that analyzes customer feedback and generates strategic insights*
 
 <div align="center">
 
-**🎯 Try it now →** **[Live Demo](https://customer-intelligence-platform.up.railway.app/)**
+**Try it now →** **[Live Demo](https://customer-intelligence-platform.up.railway.app/)**
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)
 ![LangGraph](https://img.shields.io/badge/LangGraph-0.2.0-green?style=flat-square)
@@ -30,10 +28,10 @@
 - **Manual analysis** costs $50K in consulting fees and takes 2-3 weeks
 
 ### The Cost of Inaction:
-- ❌ **Lost revenue** from unidentified $2M+ opportunities
-- ❌ **Customer churn** from unaddressed pain points
-- ❌ **Competitive disadvantage** from 3-week decision delays
-- ❌ **Resource waste** on low-impact initiatives
+-  **Lost revenue** from unidentified $2M+ opportunities
+-  **Customer churn** from unaddressed pain points
+-  **Competitive disadvantage** from 3-week decision delays
+-  **Resource waste** on low-impact initiatives
 
 ---
 
@@ -152,8 +150,6 @@ streamlit run app.py
 ## 📚 Documentation
 
 **📖 Full Documentation:** [Architecture](docs/ARCHITECTURE.md) | [Deployment](docs/DEPLOYMENT.md) | [Features](docs/FEATURES.md) | [Technical Decisions](docs/TECHNICAL_DECISIONS.md)
-
-**🤝 Open Source:** MIT License | [Contributing Guidelines](CONTRIBUTING.md)
 
 **⭐ If this project helped you, please star this repo!**
 
