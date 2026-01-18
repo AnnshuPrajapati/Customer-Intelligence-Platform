@@ -1,8 +1,7 @@
-# Customer Intelligence Platform 🚀
+# Customer Intelligence & Strategy Platform 🚀
 
-> **Transform 2-3 weeks of manual analysis into 90 seconds of AI-powered insights. Save $50K vs consulting fees.**
+> **Multi-agent AI system for customer feedback analysis. Built with LangGraph, featuring 5 specialized agents and intelligent LLM fallback.**
 
-*A multi-agent system built with LangGraph and AI that analyzes customer feedback and generates strategic insights*
 
 <div align="center">
 
