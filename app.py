@@ -126,11 +126,11 @@ def run_analysis(company: str, product: str, data_sources: list):
         st.session_state.last_product = product
 
 
-        st.success(f"✅ Analysis completed successfully for {company} - {product}!")
-
-        # Clear progress indicators
+        # Clear progress indicators first
         progress_bar.empty()
         status_text.empty()
+
+        st.success(f"✅ Analysis completed successfully for {company} - {product}!")
 
     except Exception as e:
         st.error(f"❌ Analysis failed: {str(e)}")
