@@ -376,10 +376,10 @@ class CustomerIntelligenceOrchestrator:
 
         try:
             self.console.print("💡 [bold]Step 4/5: Opportunity Finding[/bold]")
-            opportunities = self.opportunity_finder.process(dict(state))
+            result = self.opportunity_finder.process(dict(state))
 
-            # Validate the opportunities
-            validation = self._validate_agent_output(agent_name, opportunities)
+            # Validate the result
+            validation = self._validate_agent_output(agent_name, result)
             if not validation["valid"]:
                 self.console.print(f"⚠️  [yellow]Opportunity validation warnings: {len(validation['warnings'])}[/yellow]")
 
@@ -387,10 +387,7 @@ class CustomerIntelligenceOrchestrator:
             self.metrics.record_agent_timing(agent_name, duration, "completed")
             log_agent_execution(agent_name, "completed", duration)
 
-            # Update state with opportunities
-            state_copy = dict(state)
-            state_copy["opportunities"] = opportunities
-            return WorkflowState(**state_copy)
+            return WorkflowState(**result)
         except Exception as e:
             duration = time.time() - start_time
             error_msg = f"Opportunity finding error: {str(e)}"

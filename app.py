@@ -50,120 +50,44 @@ def main():
             run_analysis(company, product, data_sources)
 
     # Main content area - always show the same tab structure
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "📊 Overview", 
+        "💭 Sentiment", 
+        "🔎 Patterns", 
+        "💡 Opportunities", 
+        "📋 Strategy"
+    ])
 
-    if st.session_state.get('analysis_complete', False):
-        # Analysis completed - show results in tabs
-        results = st.session_state.get('results', {})
-        evaluation = st.session_state.get('evaluation', {})
+    # Check if analysis is complete
+    analysis_complete = st.session_state.get('analysis_complete', False)
+    
+    # Get results if available (with safe defaults)
+    results = st.session_state.get('results', {}) if analysis_complete else {}
+    evaluation = st.session_state.get('evaluation', {}) if analysis_complete else {}
 
-        with tab1:
-            st.header("Analysis Overview")
+    # TAB 1: Overview
+    with tab1:
+        st.header("Analysis Overview")
+        
+        if analysis_complete:
+            # Show metrics
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Overall Quality", f"{evaluation.get('overall_score', 0):.1%}")
             with col2:
                 st.metric("Data Processed", len(results.get('raw_data', [])))
             with col3:
-                st.metric("AI Confidence", f"{results.get('sentiment_results', {}).get('confidence', 0):.1%}")
+                sentiment_results = results.get('sentiment_results', {})
+                confidence = sentiment_results.get('confidence', 0) if isinstance(sentiment_results, dict) else 0
+                st.metric("AI Confidence", f"{confidence:.1%}")
 
             # Performance metrics
             st.subheader("Performance Metrics")
             perf_metrics = results.get('performance_metrics', {})
             if perf_metrics:
                 st.json(perf_metrics)
-
-        with tab2:
-            st.header("Sentiment Analysis")
-            sentiment = results.get('sentiment_results', {})
-            if sentiment:
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    sentiment_color = "🟢" if sentiment.get('sentiment_score', 0) > 0.2 else "🔴" if sentiment.get('sentiment_score', 0) < -0.2 else "🟡"
-                    st.metric("Overall Sentiment", f"{sentiment_color} {sentiment.get('overall_sentiment', 'unknown').title()}")
-                with col2:
-                    st.metric("Sentiment Score", f"{sentiment.get('sentiment_score', 0):.2f}")
-                with col3:
-                    st.metric("Confidence", f"{sentiment.get('confidence', 0):.1%}")
-
-                st.subheader("Key Topics")
-                topics = sentiment.get('key_topics', [])
-                if topics:
-                    for topic in topics:
-                        st.write(f"• {topic}")
-            else:
-                st.info("No sentiment analysis results available")
-
-        with tab3:
-            st.header("Pattern Detection")
-            patterns = results.get('patterns', [])
-            if patterns:
-                st.metric("Patterns Detected", len(patterns))
-
-                # Display patterns in a table
-                pattern_data = []
-                for pattern in patterns[:10]:  # Show top 10
-                    pattern_data.append({
-                        "Type": pattern.get('pattern_type', 'unknown'),
-                        "Description": pattern.get('description', '')[:100] + "...",
-                        "Frequency": pattern.get('frequency', 0),
-                        "Severity": pattern.get('severity', 'unknown'),
-                        "Impact Score": pattern.get('impact_score', 0)
-                    })
-
-                if pattern_data:
-                    st.dataframe(pd.DataFrame(pattern_data))
-            else:
-                st.info("No patterns detected")
-
-        with tab4:
-            st.header("Business Opportunities")
-            opportunities = results.get('opportunities', [])
-            if opportunities:
-                st.metric("Opportunities Identified", len(opportunities))
-
-                for i, opp in enumerate(opportunities[:5], 1):  # Show top 5
-                    with st.expander(f"{i}. {opp.get('title', 'Unknown')}"):
-                        st.write(f"**Description:** {opp.get('description', '')}")
-                        st.write(f"**Priority:** {opp.get('priority', 'unknown').title()}")
-                        st.write(f"**Impact Score:** {opp.get('impact_score', 0)}/10")
-                        st.write(f"**Effort:** {opp.get('effort_estimate', 'unknown').title()}")
-            else:
-                st.info("No opportunities identified")
-
-    with tab5:
-        st.header("Strategic Recommendations")
-
-        # Debug what the UI is receiving
-        st.write(f"DEBUG UI: results keys: {list(results.keys())}")
-        st.write(f"DEBUG UI: strategy_recommendations type: {type(results.get('strategy_recommendations'))}")
-        st.write(f"DEBUG UI: strategy_recommendations value: {results.get('strategy_recommendations')}")
-
-        summary = results.get('executive_summary', '')
-        recommendations = results.get('strategy_recommendations', [])
-
-        st.write(f"DEBUG UI: recommendations length: {len(recommendations)}")
-
-        if summary:
-            st.subheader("Executive Summary")
-            st.write(summary)
-
-        if recommendations and len(recommendations) > 0:
-            st.subheader("Strategic Recommendations")
-            st.metric("Total Recommendations", len(recommendations))
-
-            for i, rec in enumerate(recommendations[:5], 1):  # Show top 5
-                with st.expander(f"{i}. {rec.get('action', 'Unknown action')}"):
-                    st.write(f"**Category:** {rec.get('category', 'General').title()}")
-                    st.write(f"**Priority:** {rec.get('priority', 'N/A')}/10")
-                    st.write(f"**Timeline:** {rec.get('timeline', 'unknown').title()}")
-                    st.write(f"**Expected Impact:** {rec.get('expected_impact', 'N/A')}")
         else:
-            st.info("No strategic recommendations available")
-else:
-    # No analysis completed - show initial interface
-        with tab1:
-            st.header("Analysis Overview")
+            # Show initial state
             st.info("👈 Configure your analysis in the sidebar and click 'Run Analysis' to begin")
 
             # Show sample data preview
@@ -186,24 +110,132 @@ else:
             5. **Generates** strategic recommendations
             """)
 
-        with tab2:
-            st.header("Sentiment Analysis")
+    # TAB 2: Sentiment
+    with tab2:
+        st.header("Sentiment Analysis")
+        
+        if analysis_complete:
+            sentiment = results.get('sentiment_results', {})
+            if sentiment and isinstance(sentiment, dict):
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    sentiment_score = sentiment.get('sentiment_score', 0)
+                    sentiment_color = "🟢" if sentiment_score > 0.2 else "🔴" if sentiment_score < -0.2 else "🟡"
+                    st.metric(
+                        "Overall Sentiment", 
+                        f"{sentiment_color} {sentiment.get('overall_sentiment', 'unknown').title()}"
+                    )
+                
+                with col2:
+                    st.metric("Sentiment Score", f"{sentiment_score:.2f}")
+                
+                with col3:
+                    st.metric("Confidence", f"{sentiment.get('confidence', 0):.1%}")
+
+                st.subheader("Key Topics")
+                topics = sentiment.get('key_topics', [])
+                if topics:
+                    for topic in topics:
+                        st.write(f"• {topic}")
+                else:
+                    st.info("No key topics identified")
+            else:
+                st.info("No sentiment analysis results available")
+        else:
             st.info("Run an analysis to see sentiment results here")
 
-        with tab3:
-            st.header("Pattern Detection")
+    # TAB 3: Patterns
+    with tab3:
+        st.header("Pattern Detection")
+        
+        if analysis_complete:
+            patterns = results.get('patterns', [])
+            if patterns:
+                st.metric("Patterns Detected", len(patterns))
+
+                # Display patterns in a table
+                pattern_data = []
+                for pattern in patterns[:10]:  # Show top 10
+                    pattern_data.append({
+                        "Type": pattern.get('pattern_type', 'unknown'),
+                        "Description": pattern.get('description', '')[:100] + "...",
+                        "Frequency": pattern.get('frequency', 0),
+                        "Severity": pattern.get('severity', 'unknown'),
+                        "Impact Score": pattern.get('impact_score', 0)
+                    })
+
+                if pattern_data:
+                    st.dataframe(
+                        pd.DataFrame(pattern_data),
+                        use_container_width=True,
+                        hide_index=True
+                    )
+            else:
+                st.info("No patterns detected")
+        else:
             st.info("Run an analysis to see detected patterns here")
 
-        with tab4:
-            st.header("Business Opportunities")
+    # TAB 4: Opportunities
+    with tab4:
+        st.header("Business Opportunities")
+        
+        if analysis_complete:
+            opportunities = results.get('opportunities', [])
+            if opportunities:
+                st.metric("Opportunities Identified", len(opportunities))
+
+                for i, opp in enumerate(opportunities[:5], 1):  # Show top 5
+                    with st.expander(f"{i}. {opp.get('title', 'Unknown')}"):
+                        st.write(f"**Description:** {opp.get('description', '')}")
+                        st.write(f"**Priority:** {opp.get('priority', 'unknown').title()}")
+                        st.write(f"**Impact Score:** {opp.get('impact_score', 0)}/10")
+                        st.write(f"**Effort:** {opp.get('effort_estimate', 'unknown').title()}")
+            else:
+                st.info("No opportunities identified")
+        else:
             st.info("Run an analysis to see opportunities here")
 
-        with tab5:
-            st.header("Strategic Recommendations")
+    # TAB 5: Strategy
+    with tab5:
+        st.header("Strategic Recommendations")
+        
+        if analysis_complete:
+            summary = results.get('executive_summary', '')
+            recommendations = results.get('strategy_recommendations', [])
+
+            if summary:
+                st.subheader("Executive Summary")
+                st.write(summary)
+
+            if recommendations and len(recommendations) > 0:
+                st.subheader("Strategic Recommendations")
+                st.metric("Total Recommendations", len(recommendations))
+
+                for i, rec in enumerate(recommendations[:5], 1):  # Show top 5
+                    with st.expander(f"{i}. {rec.get('action', 'Unknown action')}"):
+                        st.write(f"**Category:** {rec.get('category', 'General').title()}")
+                        st.write(f"**Priority:** {rec.get('priority', 'N/A')}/10")
+                        st.write(f"**Timeline:** {rec.get('timeline', 'unknown').title()}")
+                        st.write(f"**Expected Impact:** {rec.get('expected_impact', 'N/A')}")
+            else:
+                st.info("No strategic recommendations generated")
+        else:
             st.info("Run an analysis to see strategy recommendations here")
+
 
 def run_analysis(company: str, product: str, data_sources: list):
     """Run the customer intelligence analysis."""
+    
+    # Validation
+    if not company or not product:
+        st.error("❌ Please provide both company name and product name")
+        return
+    
+    if not data_sources:
+        st.error("❌ Please select at least one data source")
+        return
+    
     try:
         from src.workflow.orchestrator import CustomerIntelligenceOrchestrator
         from src.utils.metrics import WorkflowEvaluator
@@ -212,74 +244,36 @@ def run_analysis(company: str, product: str, data_sources: list):
         progress_bar = st.progress(0)
         status_text = st.empty()
 
-        status_text.text("Initializing workflow...")
+        status_text.text("🔧 Initializing workflow...")
         progress_bar.progress(10)
+        time.sleep(0.5)  # Brief pause for UX
 
         # Initialize components
         orchestrator = CustomerIntelligenceOrchestrator()
         evaluator = WorkflowEvaluator()
 
-        status_text.text("Running customer intelligence analysis...")
+        status_text.text("🤖 Running customer intelligence analysis...")
         progress_bar.progress(30)
 
         # Run analysis
         results = orchestrator.run(company, product, data_sources)
 
-        # Debug: Check what orchestrator returned
-        print(f"DEBUG: orchestrator.run() returned type: {type(results)}")
-        print(f"DEBUG: orchestrator.run() returned value: {results}")
-
-        status_text.text("Evaluating results...")
+        status_text.text("📊 Evaluating results...")
         progress_bar.progress(80)
-
-        # Debug: Check results structure
-        print(f"DEBUG: results type: {type(results)}")
-        print(f"DEBUG: results keys: {list(results.keys()) if isinstance(results, dict) else 'Not a dict'}")
 
         # Ensure results is a dictionary
         if not isinstance(results, dict):
-            print(f"ERROR: results is not a dict, it's {type(results)}")
-            # Try to handle the error gracefully
-            results = {
-                "company_name": company,
-                "product_name": product,
-                "data_sources": data_sources,
-                "current_step": "error",
-                "errors": [f"Invalid results type: {type(results)}"],
-                "performance_metrics": {"error": "Invalid results"},
-                "strategy_recommendations": [],
-                "executive_summary": "Analysis failed due to data processing error."
-            }
-
-        # Clean up results - handle complex nested structure
-        print(f"DEBUG: Raw results structure check")
-
-        # The results seem to have duplicate keys, let's find all strategy_recommendations
-        strategy_lists = []
-        for key, value in results.items():
-            if key == 'strategy_recommendations' and isinstance(value, list):
-                strategy_lists.append(value)
-                print(f"DEBUG: Found strategy_recommendations with {len(value)} items")
-
-        # Use the non-empty one if available
-        if len(strategy_lists) > 1:
-            for strategy_list in strategy_lists:
-                if len(strategy_list) > 0:
-                    results['strategy_recommendations'] = strategy_list
-                    print(f"DEBUG: Using non-empty strategy list with {len(strategy_list)} items")
-                    break
-        elif len(strategy_lists) == 1:
-            results['strategy_recommendations'] = strategy_lists[0]
-            print(f"DEBUG: Using single strategy list with {len(strategy_lists[0])} items")
-
-        print(f"DEBUG: Final strategy_recommendations count: {len(results.get('strategy_recommendations', []))}")
-        print(f"DEBUG: Strategy content: {results.get('strategy_recommendations', [])}")
+            st.error(f"❌ Analysis failed: Invalid results type ({type(results)})")
+            progress_bar.empty()
+            status_text.empty()
+            return
 
         # Evaluate results
         evaluation = evaluator.evaluate_workflow_run(results)
 
-        status_text.text("Analysis complete!")
+        status_text.text("✨ Analysis complete!")
         progress_bar.progress(100)
+        time.sleep(0.5)
 
         # Store results in session state
         st.session_state.results = results
@@ -288,17 +282,25 @@ def run_analysis(company: str, product: str, data_sources: list):
         st.session_state.last_company = company
         st.session_state.last_product = product
 
-
-        # Clear progress indicators first
+        # Clear progress indicators
         progress_bar.empty()
         status_text.empty()
 
-        st.success(f"✅ Analysis completed successfully for {company} - {product}!")
+        # Show success message
+        st.success(f"✅ Analysis completed successfully for **{company} - {product}**!")
+        st.balloons()  # Celebration effect
+        
+        # Auto-rerun to show results
+        st.rerun()
 
+    except ImportError as e:
+        st.error(f"❌ Import Error: {str(e)}")
+        st.info("💡 Make sure all dependencies are installed: `pip install -r requirements.txt`")
     except Exception as e:
         st.error(f"❌ Analysis failed: {str(e)}")
+        st.exception(e)  # Show full stack trace in expander
         st.info("💡 Try running in demo mode: `python demo.py`")
+
 
 if __name__ == "__main__":
     main()
-
