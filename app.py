@@ -131,27 +131,35 @@ def main():
             else:
                 st.info("No opportunities identified")
 
-        with tab5:
-            st.header("Strategic Recommendations")
-            summary = results.get('executive_summary', '')
-            recommendations = results.get('strategy_recommendations', [])
+    with tab5:
+        st.header("Strategic Recommendations")
 
-            if summary:
-                st.subheader("Executive Summary")
-                st.write(summary)
+        # Debug what the UI is receiving
+        st.write(f"DEBUG UI: results keys: {list(results.keys())}")
+        st.write(f"DEBUG UI: strategy_recommendations type: {type(results.get('strategy_recommendations'))}")
+        st.write(f"DEBUG UI: strategy_recommendations value: {results.get('strategy_recommendations')}")
 
-            if recommendations:
-                st.subheader("Strategic Recommendations")
-                st.metric("Total Recommendations", len(recommendations))
+        summary = results.get('executive_summary', '')
+        recommendations = results.get('strategy_recommendations', [])
 
-                for i, rec in enumerate(recommendations[:5], 1):  # Show top 5
-                    with st.expander(f"{i}. {rec.get('action', 'Unknown action')}"):
-                        st.write(f"**Category:** {rec.get('category', 'General').title()}")
-                        st.write(f"**Priority:** {rec.get('priority', 'N/A')}/10")
-                        st.write(f"**Timeline:** {rec.get('timeline', 'unknown').title()}")
-                        st.write(f"**Expected Impact:** {rec.get('expected_impact', 'N/A')}")
-            else:
-                st.info("No strategic recommendations available")
+        st.write(f"DEBUG UI: recommendations length: {len(recommendations)}")
+
+        if summary:
+            st.subheader("Executive Summary")
+            st.write(summary)
+
+        if recommendations and len(recommendations) > 0:
+            st.subheader("Strategic Recommendations")
+            st.metric("Total Recommendations", len(recommendations))
+
+            for i, rec in enumerate(recommendations[:5], 1):  # Show top 5
+                with st.expander(f"{i}. {rec.get('action', 'Unknown action')}"):
+                    st.write(f"**Category:** {rec.get('category', 'General').title()}")
+                    st.write(f"**Priority:** {rec.get('priority', 'N/A')}/10")
+                    st.write(f"**Timeline:** {rec.get('timeline', 'unknown').title()}")
+                    st.write(f"**Expected Impact:** {rec.get('expected_impact', 'N/A')}")
+        else:
+            st.info("No strategic recommendations available")
 
     else:
         # No analysis completed - show initial interface
