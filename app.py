@@ -41,10 +41,9 @@ def main():
         if st.button("🚀 Run Analysis", type="primary"):
             run_analysis(company, product, data_sources)
 
-    # Main content
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])
-
-    with tab1:
+    # Main content area
+    if not st.session_state.get('analysis_complete', False):
+        # Show initial interface before analysis
         st.header("Analysis Overview")
         st.info("👈 Configure your analysis in the sidebar and click 'Run Analysis' to begin")
 
@@ -68,22 +67,19 @@ def main():
         5. **Generates** strategic recommendations
         """)
 
-    # Other tabs will be populated after analysis
-    with tab2:
-        st.header("Sentiment Analysis")
-        st.info("Run an analysis to see sentiment results here")
-
-    with tab3:
-        st.header("Pattern Detection")
-        st.info("Run an analysis to see detected patterns here")
-
-    with tab4:
-        st.header("Business Opportunities")
-        st.info("Run an analysis to see opportunities here")
-
-    with tab5:
-        st.header("Strategic Recommendations")
-        st.info("Run an analysis to see strategy recommendations here")
+        # Show empty tabs as preview
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])
+        with tab1:
+            st.info("Analysis results will appear here")
+        with tab2:
+            st.info("Sentiment analysis results will appear here")
+        with tab3:
+            st.info("Pattern detection results will appear here")
+        with tab4:
+            st.info("Business opportunities will appear here")
+        with tab5:
+            st.info("Strategic recommendations will appear here")
+    # Results will be displayed by display_results() function
 
 def run_analysis(company: str, product: str, data_sources: list):
     """Run the customer intelligence analysis."""
@@ -130,30 +126,34 @@ def run_analysis(company: str, product: str, data_sources: list):
         st.info("💡 Try running in demo mode: `python demo.py`")
 
 def display_results():
-    """Display analysis results in tabs."""
+    """Display analysis results in the main content area when analysis is complete."""
     if not st.session_state.get('analysis_complete', False):
         return
 
     results = st.session_state.results
     evaluation = st.session_state.evaluation
 
-    # Overview tab
-    with st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])[0]:
+    # Create tabs for results
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])
+
+    with tab1:
+        st.header("Analysis Overview")
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Overall Quality", ".1%")
+            st.metric("Overall Quality", f"{evaluation.get('overall_score', 0):.1%}")
         with col2:
             st.metric("Data Processed", len(results.get('raw_data', [])))
         with col3:
-            st.metric("AI Confidence", ".1%")
+            st.metric("AI Confidence", f"{results.get('sentiment_results', {}).get('confidence', 0):.1%}")
 
         # Performance metrics
         st.subheader("Performance Metrics")
         perf_metrics = results.get('performance_metrics', {})
-        st.json(perf_metrics)
+        if perf_metrics:
+            st.json(perf_metrics)
 
-    # Sentiment tab
-    with st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])[1]:
+    with tab2:
+        st.header("Sentiment Analysis")
         sentiment = results.get('sentiment_results', {})
         if sentiment:
             col1, col2, col3 = st.columns(3)
@@ -161,18 +161,20 @@ def display_results():
                 sentiment_color = "🟢" if sentiment.get('sentiment_score', 0) > 0.2 else "🔴" if sentiment.get('sentiment_score', 0) < -0.2 else "🟡"
                 st.metric("Overall Sentiment", f"{sentiment_color} {sentiment.get('overall_sentiment', 'unknown').title()}")
             with col2:
-                st.metric("Sentiment Score", ".2f")
+                st.metric("Sentiment Score", f"{sentiment.get('sentiment_score', 0):.2f}")
             with col3:
-                st.metric("Confidence", ".1%")
+                st.metric("Confidence", f"{sentiment.get('confidence', 0):.1%}")
 
             st.subheader("Key Topics")
             topics = sentiment.get('key_topics', [])
             if topics:
                 for topic in topics:
                     st.write(f"• {topic}")
+        else:
+            st.info("No sentiment analysis results available")
 
-    # Patterns tab
-    with st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])[2]:
+    with tab3:
+        st.header("Pattern Detection")
         patterns = results.get('patterns', [])
         if patterns:
             st.metric("Patterns Detected", len(patterns))
@@ -190,9 +192,11 @@ def display_results():
 
             if pattern_data:
                 st.dataframe(pd.DataFrame(pattern_data))
+        else:
+            st.info("No patterns detected")
 
-    # Opportunities tab
-    with st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])[3]:
+    with tab4:
+        st.header("Business Opportunities")
         opportunities = results.get('opportunities', [])
         if opportunities:
             st.metric("Opportunities Identified", len(opportunities))
@@ -203,9 +207,11 @@ def display_results():
                     st.write(f"**Priority:** {opp.get('priority', 'unknown').title()}")
                     st.write(f"**Impact Score:** {opp.get('impact_score', 0)}/10")
                     st.write(f"**Effort:** {opp.get('effort_estimate', 'unknown').title()}")
+        else:
+            st.info("No opportunities identified")
 
-    # Strategy tab
-    with st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])[4]:
+    with tab5:
+        st.header("Strategic Recommendations")
         summary = results.get('executive_summary', '')
         recommendations = results.get('strategy_recommendations', [])
 
@@ -223,6 +229,8 @@ def display_results():
                     st.write(f"**Priority:** {rec.get('priority', 'N/A')}/10")
                     st.write(f"**Timeline:** {rec.get('timeline', 'unknown').title()}")
                     st.write(f"**Expected Impact:** {rec.get('expected_impact', 'N/A')}")
+        else:
+            st.info("No strategic recommendations available")
 
 if __name__ == "__main__":
     main()
