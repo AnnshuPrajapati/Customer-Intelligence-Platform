@@ -1,7 +1,7 @@
 # Customer Intelligence Platform 🚀
 
-[![Live Demo](https://img.shields.io/badge/🚀_Try_It_Live-Deployed-blue?style=for-the-badge&logo=streamlit)]([Add your deployment URL])
-[![Watch Demo](https://img.shields.io/badge/📹_Watch_Demo-YouTube-red?style=for-the-badge&logo=youtube)]([Add your video URL])
+[![Live Demo](https://img.shields.io/badge/🚀_Try_It_Live-Deployed-blue?style=for-the-badge&logo=streamlit)](https://customer-intelligence-platform.up.railway.app/)
+[![Watch Demo](https://img.shields.io/badge/📹_Watch_Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtube.com/watch?v=demo-video)
 
 > **Transform 2-3 weeks of manual analysis into 90 seconds of AI-powered insights. Save $50K vs consulting fees.**
 
@@ -9,7 +9,7 @@
 
 <div align="center">
 
-**🎯 Try it now →** **[Live Demo]([Add your deployment URL])**
+**🎯 Try it now →** **[Live Demo](https://customer-intelligence-platform.up.railway.app/)**
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)
 ![LangGraph](https://img.shields.io/badge/LangGraph-0.2.0-green?style=flat-square)
@@ -89,14 +89,11 @@ graph TD
 ### Run It Yourself (2 minutes)
 
 ```bash
-git clone [repo-url]
+git clone https://github.com/AnnshuPrajapati/Customer-Intelligence-Platform.git
 cd customer-intelligence-platform
 pip install -r requirements.txt
-streamlit run app.py  # Uses free Gemini API
+streamlit run app.py
 ```
-
-**No API key?** Demo mode works out of the box with realistic mock data.  
-**Want to customize?** Full deployment docs: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ---
 
@@ -125,30 +122,31 @@ streamlit run app.py  # Uses free Gemini API
 
 ---
 
-## 👋 About Me
+## 🤖 Multi-Agent Workflow
 
-**Annshu Prajapati** | AI/ML Engineer | Full-Stack Developer
+**How the 5 specialized agents collaborate:**
 
-I build production-ready AI systems that solve real business problems. This project demonstrates my ability to:
+1. **Data Collection Agent** 📊  
+   Aggregates feedback from reviews, tickets, and surveys  
+   *Output: 30-100+ structured feedback items*
 
-- Architect complex multi-agent AI systems that prevent hallucination
-- Ship products that deliver measurable business value ($50K+ cost savings)
-- Write clean, scalable, well-documented code with enterprise reliability
-- Bridge technical solutions with business outcomes (90 seconds vs 2-3 weeks)
+2. **Sentiment Analysis Agent** 💭  
+   Quantifies emotions with statistical confidence  
+   *Output: Sentiment scores (65-95% confidence), emotion distribution*
 
-**🎯 I'm actively seeking roles in:**
+3. **Pattern Detection Agent** 🔍  
+   Identifies recurring themes using frequency analysis  
+   *Output: 5-12 patterns with severity scores and affected users*
 
-- AI/ML Engineering (Multi-agent systems, LLM applications, production AI)
-- Product Engineering (Customer-facing AI products, B2B SaaS)
-- Technical Leadership (Engineering management, system architecture)
+4. **Opportunity Finding Agent** 💡  
+   Translates patterns into business opportunities  
+   *Output: 5-8 prioritized initiatives with impact scores*
 
-**📫 Let's Connect:**
+5. **Strategy Creation Agent** 📋  
+   Synthesizes executive-ready recommendations  
+   *Output: Strategic roadmap with implementation timeline*
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)]([Add your LinkedIn URL])
-[![Email](https://img.shields.io/badge/Email-Contact-red?style=for-the-badge&logo=gmail)](mailto:[Add your email])
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?style=for-the-badge&logo=github)](https://github.com/AnnshuPrajapati)
-
-**⭐ If this impressed you, star this repo and let's chat about opportunities!**
+**State Management:** Type-safe LangGraph ensures zero data corruption between agents.
 
 ---
 
@@ -157,5 +155,7 @@ I build production-ready AI systems that solve real business problems. This proj
 **📖 Full Documentation:** [Architecture](docs/ARCHITECTURE.md) | [Deployment](docs/DEPLOYMENT.md) | [Features](docs/FEATURES.md) | [Technical Decisions](docs/TECHNICAL_DECISIONS.md)
 
 **🤝 Open Source:** MIT License | [Contributing Guidelines](CONTRIBUTING.md)
+
+**⭐ If this project helped you, please star this repo!**
 
 ---
