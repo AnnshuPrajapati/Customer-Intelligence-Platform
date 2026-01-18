@@ -111,6 +111,12 @@ class StrategyCreatorAgent(BaseAgent):
         try:
             self.console.print("\n[bold blue]📊 Strategy Creator Agent Starting...[/bold blue]")
 
+            opportunities = state.get("opportunities", [])
+            patterns = state.get("patterns", [])
+            sentiment = state.get("sentiment_results", {})
+
+            self.console.print(f"Input: {len(opportunities)} opportunities, {len(patterns)} patterns")
+
             # Gather all analysis results
             all_insights = self._gather_insights(state)
 
@@ -178,7 +184,12 @@ class StrategyCreatorAgent(BaseAgent):
             state["current_step"] = "strategy_creation_completed"
             state["iteration_count"] += 1
 
-            self.console.print("[bold green]✅ Strategy Creation Complete![/bold green]")
+            # CRITICAL: Log if empty
+            if not recommendations or len(recommendations) == 0:
+                self.console.print("[bold red]⚠️  WARNING: No recommendations generated![/bold red]")
+                self.logger.error("Strategy creator produced 0 recommendations - check logic")
+            else:
+                self.console.print(f"[bold green]✅ Generated {len(recommendations)} recommendations[/bold green]")
 
             # Generate and save final report
             self._generate_report(state)

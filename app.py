@@ -208,17 +208,41 @@ def main():
                 st.write(summary)
 
             if recommendations and len(recommendations) > 0:
-                st.subheader("Strategic Recommendations")
-                st.metric("Total Recommendations", len(recommendations))
+                st.subheader(f"Strategic Recommendations ({len(recommendations)})")
 
-                for i, rec in enumerate(recommendations[:5], 1):  # Show top 5
-                    with st.expander(f"{i}. {rec.get('action', 'Unknown action')}"):
-                        st.write(f"**Category:** {rec.get('category', 'General').title()}")
-                        st.write(f"**Priority:** {rec.get('priority', 'N/A')}/10")
-                        st.write(f"**Timeline:** {rec.get('timeline', 'unknown').title()}")
+                # Show metrics
+                high_priority = sum(1 for r in recommendations if r.get('priority', 0) >= 8)
+                st.metric("High Priority Actions", f"{high_priority}/{len(recommendations)}")
+
+                for i, rec in enumerate(recommendations, 1):
+                    priority = rec.get('priority', 5)
+                    priority_color = "🔴" if priority >= 8 else "🟡" if priority >= 6 else "🟢"
+
+                    with st.expander(f"{priority_color} {i}. {rec.get('action', 'Unknown')} (Priority: {priority}/10)"):
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.write(f"**Category:** {rec.get('category', 'N/A').title()}")
+                            st.write(f"**Timeline:** {rec.get('timeline', 'N/A').title()}")
+                            st.write(f"**Effort:** {rec.get('effort_level', 'N/A').title()}")
+                        with col2:
+                            st.write(f"**Owner:** {rec.get('owner', 'N/A')}")
+                            st.write(f"**Priority:** {priority}/10")
+
+                        st.write(f"**Rationale:** {rec.get('rationale', 'N/A')}")
                         st.write(f"**Expected Impact:** {rec.get('expected_impact', 'N/A')}")
+
+                        if rec.get('success_metrics'):
+                            st.write(f"**Success Metrics:** {', '.join(rec['success_metrics'])}")
             else:
-                st.info("No strategic recommendations generated")
+                st.warning("⚠️ No strategic recommendations generated")
+
+                # Debug info
+                with st.expander("🔍 Debug Information"):
+                    st.write("**Diagnostic Info:**")
+                    st.write(f"- Opportunities available: {len(results.get('opportunities', []))}")
+                    st.write(f"- Patterns detected: {len(results.get('patterns', []))}")
+                    st.write(f"- Recommendations in results: {len(recommendations)}")
+                    st.write(f"- Provider: {results.get('provider', 'unknown')}")
         else:
             st.info("Run an analysis to see strategy recommendations here")
 

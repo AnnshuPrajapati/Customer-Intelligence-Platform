@@ -705,66 +705,192 @@ class BaseAgent(ABC):
             return json.dumps({"opportunities": opportunities})
 
         elif agent_name == "strategy_creator":
-            # Generate strategy based on patterns and opportunities
+            # Get actual context for company-specific strategy
             patterns = context.get('patterns', [])
             opportunities = context.get('opportunities', [])
+            sentiment_results = context.get('sentiment_results', {})
+
+            self.logger.info(f"Strategy creator mock: {len(opportunities)} opportunities, {len(patterns)} patterns")
+
+            # CRITICAL FIX: Generate 5-8 recommendations, not just 2
+            # Use ALL opportunities, not just first 2
+            num_recommendations = min(len(opportunities), 5 + (company_hash % 4))  # 5-8 recommendations
 
             recommendations = []
-            for i, opp in enumerate(opportunities[:2]):  # Use up to 2 opportunities
-                priority = 8 + (company_hash % 3) - i  # High priority for first, slightly lower for second
-                timeline_options = ["immediate", "short-term", "medium-term"]
-                timeline = timeline_options[(company_hash + i) % len(timeline_options)]
 
-                category = opp.get('category', 'technical')
-                action = opp.get('title', 'Improvement initiative')
-                rationale = opp.get('description', 'Based on customer feedback analysis')
+            for i, opp in enumerate(opportunities[:num_recommendations]):
+                category = opp.get('category', 'product')
+                title = opp.get('title', 'Improvement initiative')
+                description = opp.get('description', '')
+                impact = opp.get('impact_score', 5)
+                effort = opp.get('effort_estimate', 'medium')
+                timeline = opp.get('timeline', 'short-term')
 
-                if category == "technical":
-                    owner = "Engineering Team"
-                    dependencies = ["engineering team availability", "technical resources"]
-                    risks = ["complex technical challenges", "integration issues"]
-                    metrics = ["performance metrics", "user satisfaction scores"]
+                # Map category to owner
+                owner_map = {
+                    "technical": "Engineering Team",
+                    "product": "Product Team",
+                    "design": "Design Team",
+                    "support": "Customer Success Team",
+                    "security": "Security Team",
+                    "marketing": "Marketing Team"
+                }
+                owner = owner_map.get(category, "Product Team")
+
+                # Create specific action incorporating company/product
+                action = f"{title}"  # Keep original title
+
+                # Enhanced rationale with company context
+                rationale = f"{description} This addresses critical needs identified in {company}'s customer feedback analysis and will significantly improve {product} user satisfaction."
+
+                # Impact statement based on score
+                if impact >= 8:
+                    expected_impact = f"High impact - Will significantly improve user satisfaction and reduce churn for {company} customers. Expected to drive measurable improvements in key metrics."
+                elif impact >= 6:
+                    expected_impact = f"Medium impact - Notable enhancement to {product} functionality and user experience. Will address common pain points reported by {company} users."
                 else:
-                    owner = "Product Team"
-                    dependencies = ["design team resources", "user research"]
-                    risks = ["scope creep", "timeline delays"]
-                    metrics = ["user engagement", "feature adoption rates"]
+                    expected_impact = f"Incremental impact - Steady improvement to {product} capabilities. Contributes to overall platform quality for {company}."
+
+                # Success metrics
+                metrics = [
+                    "User satisfaction score (NPS)",
+                    "Feature adoption rate",
+                    "Customer retention improvement",
+                    "Support ticket reduction"
+                ]
+
+                # Dependencies
+                dependencies = [
+                    f"{owner} capacity and resources",
+                    "Technical infrastructure readiness",
+                    "User research and validation",
+                    "Stakeholder alignment"
+                ]
+
+                # Risks based on effort
+                risk_map = {
+                    "small": ["Timeline pressure", "Resource availability"],
+                    "medium": ["Scope creep risk", "Integration complexity", "User adoption challenges"],
+                    "large": ["Technical complexity", "Extended timeline", "Budget constraints", "Change management"]
+                }
+                risks = risk_map.get(effort, ["Implementation challenges", "Resource constraints"])
+
+                # Priority decreases for each subsequent recommendation
+                priority = max(1, 10 - i)
+                if impact >= 8:
+                    priority = min(10, priority + 1)  # Boost high-impact items
 
                 recommendations.append({
                     "category": category,
-                    "action": f"Implement {action.lower()} for {product}",
-                    "rationale": f"{rationale} - critical feedback from {company} customers",
-                    "expected_impact": opp.get('expected_outcome', 'Improve user experience'),
+                    "action": action,
+                    "rationale": rationale,
+                    "expected_impact": expected_impact,
                     "timeline": timeline,
                     "priority": priority,
-                    "effort_level": "medium",
-                    "success_metrics": metrics,
-                    "dependencies": dependencies,
-                    "risks": risks,
+                    "effort_level": effort,
+                    "success_metrics": metrics[:3],
+                    "dependencies": dependencies[:3],
+                    "risks": risks[:3],
                     "owner": owner
                 })
 
-            # Generate company-specific executive summary
-            summary_templates = [
-                f"Customer intelligence analysis for {company}'s {product} reveals critical priorities in performance and user experience. The data shows consistent feedback about key issues that need immediate attention. Implementing these recommendations will address the most impactful customer pain points.",
-                f"Analysis of {company} customer feedback indicates that {product} requires focused improvements in user experience and technical performance. The insights provide clear direction for enhancing customer satisfaction and driving business growth.",
-                f"Strategic review of {product} feedback shows opportunities for significant improvements in user satisfaction and product quality. The recommended actions prioritize high-impact changes that will directly address customer needs."
-            ]
-            executive_summary = summary_templates[company_hash % len(summary_templates)]
+            # CRITICAL FIX: Data-driven executive summary, not generic templates
+            sentiment = sentiment_results.get('overall_sentiment', 'mixed')
+            confidence = sentiment_results.get('confidence', 0.75)
+            sentiment_score = sentiment_results.get('sentiment_score', 0.0)
 
-            # Generate implementation roadmap
+            # Get actual insights from data
+            num_patterns = len(patterns)
+            num_opportunities = len(opportunities)
+
+            # Extract real issues from patterns
+            critical_issues = []
+            for pattern in patterns[:3]:
+                if pattern.get('severity') in ['critical', 'high']:
+                    desc = pattern.get('description', '')
+                    if desc:
+                        # Get first meaningful phrase (up to 60 chars)
+                        critical_issues.append(desc[:60].strip())
+
+            # Get top opportunity titles
+            top_opportunity_titles = [opp.get('title', '') for opp in opportunities[:3]]
+
+            # Build sentiment phrase
+            if sentiment == "positive":
+                sentiment_phrase = f"positive customer sentiment (score: {sentiment_score:.2f}, confidence: {confidence:.0%})"
+                outlook = "Strong foundation for continued growth"
+            elif sentiment == "negative":
+                sentiment_phrase = f"concerning negative feedback (score: {sentiment_score:.2f}, confidence: {confidence:.0%})"
+                outlook = "Urgent action required to address customer concerns"
+            else:
+                sentiment_phrase = f"mixed customer sentiment (score: {sentiment_score:.2f}, confidence: {confidence:.0%})"
+                outlook = "Balanced approach needed to address varying customer needs"
+
+            # Priority areas from recommendations
+            high_priority = sum(1 for r in recommendations if r['priority'] >= 8)
+            immediate = sum(1 for r in recommendations if r['timeline'] == 'immediate')
+
+            # CONSTRUCT DATA-DRIVEN EXECUTIVE SUMMARY
+            executive_summary = f"""Customer intelligence analysis for {company}'s {product} reveals {sentiment_phrase}.
+
+
+
+Our analysis identified {num_patterns} distinct patterns across customer feedback, leading to {num_opportunities} strategic opportunities for improvement. {outlook}.
+
+
+
+Key findings include: {'. '.join(critical_issues[:2]) if critical_issues else 'performance optimization needs and user experience enhancements'}. These insights directly inform our strategic recommendations.
+
+
+
+Priority initiatives: {', '.join(top_opportunity_titles[:3]) if top_opportunity_titles else 'system improvements and feature development'}. We recommend {len(recommendations)} specific actions, with {high_priority} high-priority items requiring immediate attention.
+
+
+
+Implementation of these recommendations will directly address validated customer pain points and drive measurable improvements in satisfaction, retention, and product-market fit for {company}."""
+
+            # Implementation roadmap
             roadmap = {
-                "phase_1_immediate": ["Critical issue assessment", "Quick wins implementation"],
-                "phase_2_short_term": [f"{product} core improvements", "User feedback integration"],
-                "phase_3_long_term": ["Advanced features", "Scalability enhancements"],
-                "key_milestones": ["Initial improvements deployed", "Major updates completed"],
-                "resource_requirements": ["Engineering team", "Product team", "Design resources"]
+                "phase_1_immediate": [
+                    f"Launch critical fixes for {product} ({immediate} immediate actions identified)",
+                    f"Deploy quick wins to address top customer pain points",
+                    f"Establish metrics tracking for {company} customer satisfaction"
+                ],
+                "phase_2_short_term": [
+                    f"Roll out {product} core improvements (30-90 days)",
+                    f"Implement top {min(3, len(recommendations))} priority recommendations",
+                    f"Integrate continuous feedback mechanisms"
+                ],
+                "phase_3_long_term": [
+                    f"Complete {product} strategic transformation (90+ days)",
+                    f"Scale successful initiatives across {company} platform",
+                    f"Build advanced capabilities based on validated market demand"
+                ],
+                "key_milestones": [
+                    f"Week 4: Critical {product} improvements deployed to {company} users",
+                    f"Week 12: Major feature updates and optimizations completed",
+                    f"Week 24: Full strategic roadmap delivered and validated"
+                ],
+                "resource_requirements": [
+                    recommendations[0]['owner'] if recommendations else "Product Team",
+                    "Engineering resources (2-3 full-time developers)",
+                    "Design and UX support (1 designer)",
+                    "QA and testing resources",
+                    "Project management and coordination"
+                ]
             }
+
+            self.logger.info(f"Generated {len(recommendations)} recommendations for {company}")
 
             return json.dumps({
                 "recommendations": recommendations,
                 "executive_summary": executive_summary,
-                "implementation_roadmap": roadmap
+                "implementation_roadmap": roadmap,
+                "total_recommendations": len(recommendations),
+                "high_priority_count": high_priority,
+                "immediate_actions": immediate,
+                "estimated_timeline": "12-24 weeks for comprehensive implementation",
+                "success_probability": "High - based on validated customer feedback and clear priorities"
             })
 
         else:
