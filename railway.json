@@ -2,24 +2,47 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "pip install -r requirements.txt"
+    "buildCommand": "pip install -r requirements.txt --no-cache-dir",
+    "watchPatterns": [
+      "src/**/*.py",
+      "app.py",
+      "requirements.txt"
+    ]
   },
   "deploy": {
-    "startCommand": "streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true",
+    "startCommand": "streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --server.runOnSave false --server.enableCORS false --server.enableXsrfProtection false",
     "healthcheckPath": "/",
-    "healthcheckTimeout": 600,
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 5
+    "restartPolicyMaxRetries": 3,
+    "sleepApplication": false,
+    "deploymentStrategy": "ROLLING_UPDATE"
   },
   "variables": {
     "GOOGLE_API_KEY": {
       "fromSecret": "GOOGLE_API_KEY"
+    },
+    "ANTHROPIC_API_KEY": {
+      "fromSecret": "ANTHROPIC_API_KEY"
+    },
+    "OPENAI_API_KEY": {
+      "fromSecret": "OPENAI_API_KEY"
     },
     "LOG_LEVEL": "INFO",
     "MAX_ITERATIONS": "3",
     "STREAMLIT_SERVER_PORT": "$PORT",
     "STREAMLIT_SERVER_ADDRESS": "0.0.0.0",
     "STREAMLIT_SERVER_HEADLESS": "true",
-    "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "false"
+    "STREAMLIT_SERVER_RUN_ON_SAVE": "false",
+    "STREAMLIT_SERVER_ENABLE_CORS": "false",
+    "STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION": "false",
+    "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "false",
+    "STREAMLIT_THEME_BASE": "light",
+    "STREAMLIT_CLIENT_SHOW_ERROR_DETAILS": "false",
+    "PYTHONPATH": "/app",
+    "PYTHONUNBUFFERED": "1",
+    "MOCK_MODE": "true",
+    "OLLAMA_HOST": "",
+    "OLLAMA_PORT": ""
   }
 }

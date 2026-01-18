@@ -171,11 +171,10 @@ class BaseAgent(ABC):
         # 3. Try Google Gemini (new SDK - preferred)
         if GOOGLE_GENAI_AVAILABLE and os.getenv("GOOGLE_API_KEY"):
             try:
-                # Configure the new Google GenAI client
-                genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+                # Initialize the new Google GenAI client
+                client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
                 # Test the connection
-                client = genai.Client()
                 response = client.models.generate_content(
                     model="gemini-1.5-flash",
                     contents="Test connection"
