@@ -5,6 +5,7 @@ This module defines the abstract base class that all specialized agents must inh
 Provides common functionality including Claude LLM integration, logging, and error handling.
 """
 
+import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
