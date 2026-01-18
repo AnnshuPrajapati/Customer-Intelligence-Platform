@@ -46,8 +46,11 @@ def main():
             st.session_state.evaluation = None
             run_analysis(company, product, data_sources)
 
-    # Main content area
-    if not st.session_state.get('analysis_complete', False):
+    # Main content area - always show either initial interface or results
+    if st.session_state.get('analysis_complete', False):
+        # Show results if analysis is complete
+        display_results()
+    else:
         # Show initial interface before analysis
         st.header("Analysis Overview")
         st.info("👈 Configure your analysis in the sidebar and click 'Run Analysis' to begin")
@@ -84,7 +87,6 @@ def main():
             st.info("Business opportunities will appear here")
         with tab5:
             st.info("Strategic recommendations will appear here")
-    # Results will be displayed by display_results() function
 
 def run_analysis(company: str, product: str, data_sources: list):
     """Run the customer intelligence analysis."""
