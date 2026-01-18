@@ -1,7 +1,6 @@
 # Customer Intelligence Platform 🚀
 
 [![Live Demo](https://img.shields.io/badge/🚀_Try_It_Live-Deployed-blue?style=for-the-badge&logo=streamlit)](https://customer-intelligence-platform.up.railway.app/)
-[![Watch Demo](https://img.shields.io/badge/📹_Watch_Demo-YouTube-red?style=for-the-badge&logo=youtube)](https://youtube.com/watch?v=demo-video)
 
 > **Transform 2-3 weeks of manual analysis into 90 seconds of AI-powered insights. Save $50K vs consulting fees.**
 
