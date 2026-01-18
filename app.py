@@ -229,6 +229,19 @@ def run_analysis(company: str, product: str, data_sources: list):
         print(f"DEBUG: results type: {type(results)}")
         print(f"DEBUG: results value: {results}")
 
+        # Ensure results is a dictionary
+        if not isinstance(results, dict):
+            print(f"ERROR: results is not a dict, it's {type(results)}")
+            # Try to handle the error gracefully
+            results = {
+                "company_name": company,
+                "product_name": product,
+                "data_sources": data_sources,
+                "current_step": "error",
+                "errors": [f"Invalid results type: {type(results)}"],
+                "performance_metrics": {"error": "Invalid results"}
+            }
+
         # Evaluate results
         evaluation = evaluator.evaluate_workflow_run(results)
 
