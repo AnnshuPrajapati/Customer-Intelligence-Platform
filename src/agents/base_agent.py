@@ -83,7 +83,7 @@ class GeminiWrapper:
 
         # Call Gemini API
         response = self.client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash-exp",
             contents=content
         )
 
@@ -161,7 +161,7 @@ class BaseAgent(ABC):
                 self.logger.info("🧪 Testing Gemini connection...")
                 # Test the connection
                 response = client.models.generate_content(
-                    model="gemini-1.5-flash",
+                    model="gemini-2.0-flash-exp",
                     contents="Test connection"
                 )
 
@@ -178,7 +178,7 @@ class BaseAgent(ABC):
             try:
                 self.logger.info("🚀 Attempting Gemini LangChain fallback...")
                 llm = ChatGoogleGenerativeAI(
-                    model="gemini-1.5-flash",  # Fast and free tier
+                    model="gemini-2.0-flash-exp",  # Updated to current production model
                     temperature=self.temperature,
                     max_tokens=4096
                 )
