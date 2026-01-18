@@ -20,11 +20,11 @@ from langgraph.graph import StateGraph
 from rich.console import Console
 from rich.table import Table
 
-from .agents.data_collector import DataCollectorAgent
-from .agents.sentiment_analyzer import SentimentAnalyzerAgent
-from .agents.pattern_detector import PatternDetectorAgent
-from .agents.opportunity_finder import OpportunityFinderAgent
-from .agents.strategy_creator import StrategyCreatorAgent
+from ..agents.data_collector import DataCollectorAgent
+from ..agents.sentiment_analyzer import SentimentAnalyzerAgent
+from ..agents.pattern_detector import PatternDetectorAgent
+from ..agents.opportunity_finder import OpportunityFinderAgent
+from ..agents.strategy_creator import StrategyCreatorAgent
 from .state import WorkflowState, create_initial_state
 from ..utils.logger import get_workflow_logger, log_workflow_start, log_workflow_complete, log_agent_execution
 
