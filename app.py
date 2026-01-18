@@ -39,6 +39,13 @@ def main():
         )
 
         if st.button("🚀 Run Analysis", type="primary"):
+            # Clear previous results before running new analysis
+            if 'analysis_complete' in st.session_state:
+                del st.session_state.analysis_complete
+            if 'results' in st.session_state:
+                del st.session_state.results
+            if 'evaluation' in st.session_state:
+                del st.session_state.evaluation
             run_analysis(company, product, data_sources)
 
     # Main content area
@@ -117,8 +124,10 @@ def run_analysis(company: str, product: str, data_sources: list):
         st.session_state.results = results
         st.session_state.evaluation = evaluation
         st.session_state.analysis_complete = True
+        st.session_state.last_company = company
+        st.session_state.last_product = product
 
-        st.success("✅ Analysis completed successfully!")
+        st.success(f"✅ Analysis completed successfully for {company} - {product}!")
         st.rerun()
 
     except Exception as e:
@@ -233,6 +242,13 @@ def display_results():
             st.info("No strategic recommendations available")
 
 if __name__ == "__main__":
+    # Always call main() first
     main()
-    display_results()
+
+    # Then display results if available
+    if st.session_state.get('analysis_complete', False):
+        display_results()
+    else:
+        # Show initial state message
+        st.info("👈 Configure your analysis in the sidebar and click 'Run Analysis' to begin")
 
