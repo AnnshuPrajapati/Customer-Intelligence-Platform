@@ -140,80 +140,115 @@ class BaseAgent(ABC):
         """
         import os
 
+        # ADD DEBUGGING
+        self.logger.info("=" * 80)
+        self.logger.info(f"🔍 INITIALIZING LLM FOR AGENT: {self.name}")
+        self.logger.info(f"GOOGLE_API_KEY present: {bool(os.getenv('GOOGLE_API_KEY'))}")
+        self.logger.info(f"GOOGLE_API_KEY length: {len(os.getenv('GOOGLE_API_KEY', ''))}")
+        self.logger.info(f"GOOGLE_GENAI_AVAILABLE: {GOOGLE_GENAI_AVAILABLE}")
+        self.logger.info(f"GOOGLE_LANGCHAIN_AVAILABLE: {GOOGLE_LANGCHAIN_AVAILABLE}")
+        self.logger.info(f"ANTHROPIC_AVAILABLE: {ANTHROPIC_AVAILABLE}")
+        self.logger.info(f"OPENAI_AVAILABLE: {OPENAI_AVAILABLE}")
+        self.logger.info("=" * 80)
+
         # 1. Try Google Gemini (new SDK - now preferred, free tier available)
         if GOOGLE_GENAI_AVAILABLE and os.getenv("GOOGLE_API_KEY"):
             try:
+                self.logger.info("🚀 Attempting to initialize Gemini (new API)...")
                 # Initialize the new Google GenAI client
                 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
+                self.logger.info("🧪 Testing Gemini connection...")
                 # Test the connection
                 response = client.models.generate_content(
                     model="gemini-1.5-flash",
                     contents="Test connection"
                 )
 
+                self.logger.info("✅ Gemini (new API) initialized successfully!")
+                self.logger.info(f"Test response: {response.text[:100]}...")
                 # Return a wrapper that uses the new API
                 return GeminiWrapper(client), "Google Gemini (New API)"
             except Exception as e:
-                self.logger.warning(f"New Gemini API failed: {e}")
+                self.logger.error(f"❌ Gemini new API failed: {str(e)}")
+                self.logger.exception(e)
 
         # 2. Try Google Gemini (LangChain fallback)
         if GOOGLE_LANGCHAIN_AVAILABLE and os.getenv("GOOGLE_API_KEY"):
             try:
+                self.logger.info("🚀 Attempting Gemini LangChain fallback...")
                 llm = ChatGoogleGenerativeAI(
                     model="gemini-1.5-flash",  # Fast and free tier
                     temperature=self.temperature,
                     max_tokens=4096
                 )
+                self.logger.info("🧪 Testing Gemini LangChain connection...")
                 # Test the connection
                 llm.invoke("test")
+                self.logger.info("✅ Gemini LangChain initialized successfully!")
                 return llm, "Google Gemini (LangChain)"
             except Exception as e:
-                self.logger.warning(f"Gemini LangChain fallback failed: {e}")
+                self.logger.error(f"❌ Gemini LangChain failed: {str(e)}")
+                self.logger.exception(e)
 
         # 3. Try OpenAI GPT-4 (affordable, great quality)
         if OPENAI_AVAILABLE and os.getenv("OPENAI_API_KEY"):
             try:
+                self.logger.info("🚀 Attempting OpenAI GPT-4 initialization...")
                 llm = ChatOpenAI(
                     model="gpt-4o-mini",  # Cheapest GPT-4 model
                     temperature=self.temperature,
                     max_tokens=4096
                 )
+                self.logger.info("🧪 Testing OpenAI connection...")
                 # Test the connection
                 llm.invoke("test")
+                self.logger.info("✅ OpenAI GPT-4 initialized successfully!")
                 return llm, "OpenAI GPT-4"
             except Exception as e:
-                self.logger.warning(f"GPT-4 initialization failed: {e}")
+                self.logger.error(f"❌ GPT-4 initialization failed: {str(e)}")
+                self.logger.exception(e)
 
         # 4. Try Anthropic Claude (most expensive, best quality - last resort)
         if ANTHROPIC_AVAILABLE and os.getenv("ANTHROPIC_API_KEY"):
             try:
+                self.logger.info("🚀 Attempting Anthropic Claude initialization...")
                 llm = ChatAnthropic(
                     model="claude-3-5-sonnet-20241022",
                     temperature=self.temperature,
                     max_tokens=4096
                 )
+                self.logger.info("🧪 Testing Claude connection...")
                 # Test the connection
                 llm.invoke("test")
+                self.logger.info("✅ Anthropic Claude initialized successfully!")
                 return llm, "Anthropic Claude"
             except Exception as e:
-                self.logger.warning(f"Claude initialization failed: {e}")
+                self.logger.error(f"❌ Claude initialization failed: {str(e)}")
+                self.logger.exception(e)
 
         # 5. Try Ollama (completely free, local models)
         if OLLAMA_AVAILABLE:
             try:
+                self.logger.info("🚀 Attempting Ollama local model initialization...")
                 llm = ChatOllama(
                     model="llama3.1",  # Free local model
                     temperature=self.temperature
                 )
+                self.logger.info("🧪 Testing Ollama connection...")
                 # Test the connection
                 llm.invoke("test")
+                self.logger.info("✅ Ollama local model initialized successfully!")
                 return llm, "Ollama Local"
             except Exception as e:
-                self.logger.warning(f"Ollama initialization failed: {e}")
+                self.logger.error(f"❌ Ollama initialization failed: {str(e)}")
+                self.logger.exception(e)
 
         # 6. Fallback to mock mode (completely free)
-        self.logger.warning(f"No LLM providers available, using mock mode for agent '{self.name}'")
+        self.logger.warning("⚠️ " + "=" * 76)
+        self.logger.warning(f"⚠️ NO LLM PROVIDERS AVAILABLE FOR AGENT '{self.name}'")
+        self.logger.warning("⚠️ USING MOCK MODE - RESULTS WILL BE SYNTHETIC")
+        self.logger.warning("⚠️ " + "=" * 76)
         return None, "Mock Mode"
 
     def execute(self, task: str, context: Dict[str, Any]) -> str:
@@ -232,6 +267,11 @@ class BaseAgent(ABC):
             Exception: If both LLM and mock fallback fail
         """
         try:
+            # Log provider status
+            if self.provider == "Mock Mode":
+                self.logger.warning(f"⚠️ Agent '{self.name}' using MOCK MODE (no LLM available)")
+            else:
+                self.logger.debug(f"Agent '{self.name}' using {self.provider}")
             # Format the task with context
             formatted_task = self._format_task(task, context)
 
@@ -336,14 +376,62 @@ class BaseAgent(ABC):
                 f"Analysis of {company}'s {product} shows {sentiment} overall sentiment. Customers appreciate {topics[2]} but struggle with {topics[0]} and {topics[1]} issues.",
                 f"Feedback for {product} indicates {sentiment} sentiment with focus on {topics[0]}, {topics[1]}, and {topics[2]} aspects of the product."
             ]
+            # PROPER CONFIDENCE CALCULATION BASED ON DATA QUALITY
+            # Get actual sample size from context
+            feedback_data = context.get('feedback_data', [])
+            raw_data = context.get('raw_data', [])
+            data_summary = context.get('data_summary', {})
+
+            # Determine actual sample size
+            if 'sample_size' in context:
+                sample_size = context['sample_size']
+            elif feedback_data:
+                sample_size = len(feedback_data)
+            elif raw_data:
+                sample_size = len(raw_data)
+            else:
+                sample_size = data_summary.get('total_records', 40)
+
+            # Base confidence on sample size
+            if sample_size >= 100:
+                base_confidence = 0.85
+            elif sample_size >= 50:
+                base_confidence = 0.75
+            elif sample_size >= 20:
+                base_confidence = 0.65
+            else:
+                base_confidence = 0.50
+
+            # Adjust for sentiment consistency
+            if sentiment == "mixed":
+                consistency_adjustment = -0.10
+            else:
+                consistency_adjustment = 0.05
+
+            # Final confidence
+            confidence = base_confidence + consistency_adjustment
+            confidence = max(0.40, min(0.95, confidence))
+            confidence = round(confidence, 2)
+
+            # Log for debugging
+            self.logger.debug(f"Confidence calc: sample={sample_size}, base={base_confidence}, sentiment={sentiment}, adjustment={consistency_adjustment}, final={confidence}")
+
+            # Summary with confidence indication
+            confidence_level = "high" if confidence >= 0.75 else "moderate" if confidence >= 0.60 else "low"
+            summary_templates = [
+                f"Customer feedback shows {sentiment} sentiments with {confidence_level} confidence ({confidence:.0%}). Analysis based on {sample_size} feedback items. Key concerns include {topics[0]} and {topics[1]}, while {topics[2]} receives positive feedback.",
+                f"Analysis of {company}'s {product} shows {sentiment} sentiment with {confidence:.0%} certainty from {sample_size} items. Customers appreciate {topics[2]} but struggle with {topics[0]} and {topics[1]}.",
+                f"Feedback for {product} indicates {sentiment} sentiment (confidence: {confidence:.0%}) across {sample_size} data points on {topics[0]}, {topics[1]}, and {topics[2]}."
+            ]
             summary = summary_templates[company_hash % len(summary_templates)]
 
             return f'''{{
                 "overall_sentiment": "{sentiment}",
-                "sentiment_score": {score:.1f},
+                "sentiment_score": {score:.2f},
                 "emotions": {json.dumps(emotions)},
                 "key_topics": {json.dumps(topics)},
-                "confidence": 0.75,
+                "confidence": {confidence},
+                "sample_size": {sample_size},
                 "analysis_summary": "{summary}"
             }}'''
 
@@ -407,53 +495,211 @@ class BaseAgent(ABC):
             }}'''
 
         elif agent_name == "opportunity_finder":
-            # Generate opportunities based on detected patterns
-            patterns = context.get('patterns', [])
-            if not patterns:
-                patterns = [
-                    {"pattern_type": "pain_point", "description": "Performance issues"},
-                    {"pattern_type": "feature_request", "description": "Mobile improvements"}
-                ]
+            # Generate 5-8 varied opportunities based on company context
 
+            patterns = context.get('patterns', [])
+
+            # Generate 5-8 opportunities with company-specific variations
+            num_opportunities = 5 + (company_hash % 4)  # 5-8 opportunities
             opportunities = []
-            for i, pattern in enumerate(patterns[:2]):  # Use up to 2 patterns
-                if pattern["pattern_type"] == "pain_point":
-                    title = "Performance Optimization Initiative"
-                    description = f"Address {pattern['description'].lower()} through targeted optimizations"
-                    category = "technical"
-                    priority = "high"
-                    impact = 8 + (company_hash % 3)  # 8-10
-                elif pattern["pattern_type"] == "feature_request":
-                    title = "Feature Enhancement Program"
-                    description = f"Implement requested {pattern['description'].lower()} to improve user experience"
-                    category = "product"
-                    priority = "medium"
-                    impact = 6 + (company_hash % 3)  # 6-8
-                elif pattern["pattern_type"] == "bug_report":
-                    title = "Stability Improvement Project"
-                    description = f"Fix reported {pattern['description'].lower()} to improve reliability"
-                    category = "technical"
-                    priority = "high"
-                    impact = 7 + (company_hash % 4)  # 7-10
+
+            # Diverse opportunity templates - company name and product integrated
+            opportunity_templates = [
+                {
+                    "titles": [
+                        f"Optimize {product} Performance and Scalability",
+                        f"Enhance {product} Speed for {company} Users",
+                        f"Improve {product} Response Times and Reliability",
+                        f"Boost {product} System Efficiency"
+                    ],
+                    "descriptions": [
+                        f"Address performance bottlenecks in {product} through targeted optimization",
+                        f"Implement caching and database optimization for {product}",
+                        f"Reduce latency and improve response times across {product}",
+                        f"Scale {product} infrastructure to handle growing {company} user base"
+                    ],
+                    "category": "technical",
+                    "priority": "high",
+                    "base_impact": 8
+                },
+                {
+                    "titles": [
+                        f"Develop Advanced {product} Mobile Experience",
+                        f"Build {product} Native Mobile Apps for {company}",
+                        f"Enhance {product} Mobile Responsiveness",
+                        f"Launch {product} iOS and Android Applications"
+                    ],
+                    "descriptions": [
+                        f"Create dedicated mobile applications for {product} to improve user engagement",
+                        f"Implement responsive design improvements for {product} mobile web",
+                        f"Add offline capabilities to {product} mobile experience",
+                        f"Optimize {product} for mobile-first {company} customers"
+                    ],
+                    "category": "product",
+                    "priority": "high",
+                    "base_impact": 7
+                },
+                {
+                    "titles": [
+                        f"Redesign {product} User Interface for {company}",
+                        f"Modernize {product} User Experience",
+                        f"Simplify {product} Navigation and Workflow",
+                        f"Enhance {product} Visual Design and Usability"
+                    ],
+                    "descriptions": [
+                        f"Conduct UX research and redesign {product} interface based on {company} user feedback",
+                        f"Simplify complex workflows in {product} to reduce learning curve",
+                        f"Implement modern design patterns to improve {product} aesthetics",
+                        f"Improve information architecture in {product} for better discoverability"
+                    ],
+                    "category": "design",
+                    "priority": "medium",
+                    "base_impact": 6
+                },
+                {
+                    "titles": [
+                        f"Fix Critical {product} Stability Issues",
+                        f"Resolve {product} Bug Backlog for {company}",
+                        f"Eliminate {product} Crash Reports",
+                        f"Address {product} Data Integrity Problems"
+                    ],
+                    "descriptions": [
+                        f"Prioritize and fix high-severity bugs affecting {product} stability",
+                        f"Implement comprehensive testing to prevent {product} regressions",
+                        f"Address root causes of {product} crashes and errors",
+                        f"Improve error handling and recovery in {product}"
+                    ],
+                    "category": "technical",
+                    "priority": "high",
+                    "base_impact": 9
+                },
+                {
+                    "titles": [
+                        f"Expand {product} Integration Ecosystem",
+                        f"Build {product} API Platform for {company}",
+                        f"Add Third-Party Integrations to {product}",
+                        f"Enable {product} Webhook System"
+                    ],
+                    "descriptions": [
+                        f"Develop comprehensive API documentation for {product} integrations",
+                        f"Build integrations with popular tools used by {company} customers",
+                        f"Create webhook system for real-time {product} data synchronization",
+                        f"Enable Zapier/Make integrations for {product} workflow automation"
+                    ],
+                    "category": "product",
+                    "priority": "medium",
+                    "base_impact": 7
+                },
+                {
+                    "titles": [
+                        f"Strengthen {product} Security Infrastructure",
+                        f"Implement {product} Advanced Authentication for {company}",
+                        f"Enhance {product} Data Encryption",
+                        f"Achieve {product} SOC 2 Compliance"
+                    ],
+                    "descriptions": [
+                        f"Implement enterprise-grade security features in {product}",
+                        f"Add multi-factor authentication and SSO to {product}",
+                        f"Enhance data encryption at rest and in transit for {product}",
+                        f"Complete security audits and compliance certifications for {product}"
+                    ],
+                    "category": "security",
+                    "priority": "high",
+                    "base_impact": 8
+                },
+                {
+                    "titles": [
+                        f"Improve {product} Onboarding Experience",
+                        f"Create {product} Interactive Tutorials for {company}",
+                        f"Enhance {product} Documentation and Help Center",
+                        f"Build {product} Knowledge Base"
+                    ],
+                    "descriptions": [
+                        f"Design interactive onboarding flow to reduce {product} time-to-value",
+                        f"Create video tutorials and guides for {product} key features",
+                        f"Improve help documentation based on {company} support tickets",
+                        f"Implement in-app guidance and tooltips in {product}"
+                    ],
+                    "category": "support",
+                    "priority": "medium",
+                    "base_impact": 6
+                },
+                {
+                    "titles": [
+                        f"Add Advanced Analytics to {product}",
+                        f"Build {product} Reporting Dashboard for {company}",
+                        f"Implement {product} Data Export Features",
+                        f"Create {product} Custom Report Builder"
+                    ],
+                    "descriptions": [
+                        f"Develop comprehensive analytics dashboard for {product} users",
+                        f"Add customizable reporting capabilities to {product}",
+                        f"Enable data export in multiple formats from {product}",
+                        f"Implement real-time metrics and KPI tracking in {product}"
+                    ],
+                    "category": "product",
+                    "priority": "medium",
+                    "base_impact": 7
+                }
+            ]
+
+            # Generate unique opportunities
+            for i in range(num_opportunities):
+                template_idx = (company_hash + i * 17) % len(opportunity_templates)
+                template = opportunity_templates[template_idx]
+
+                # Select varied title and description
+                title_idx = (company_hash + i * 7) % len(template["titles"])
+                desc_idx = (company_hash + i * 11) % len(template["descriptions"])
+
+                title = template["titles"][title_idx]
+                description = template["descriptions"][desc_idx]
+
+                # Vary impact scores (3-10 range)
+                impact_variation = (company_hash + i * 13) % 5  # 0-4
+                impact = template["base_impact"] + impact_variation - 2
+                impact = max(3, min(10, impact))
+
+                # Vary effort based on impact
+                if impact >= 8:
+                    effort_options = ["medium", "large", "large"]
+                elif impact >= 6:
+                    effort_options = ["small", "medium", "medium"]
                 else:
-                    title = "User Experience Enhancement"
-                    description = f"Improve {pattern['description'].lower()} based on user feedback"
-                    category = "product"
+                    effort_options = ["small", "small", "medium"]
+                effort = effort_options[(company_hash + i) % len(effort_options)]
+
+                # Vary timeline
+                timeline_options = ["immediate", "short-term", "short-term", "long-term"]
+                timeline = timeline_options[(company_hash + i * 19) % len(timeline_options)]
+
+                # Calculate priority based on impact and effort
+                if impact >= 8 and effort in ["small", "medium"]:
+                    priority = "high"
+                elif impact >= 6:
                     priority = "medium"
-                    impact = 5 + (company_hash % 4)  # 5-8
+                else:
+                    priority = "low"
+
+                # Build supporting data from patterns if available
+                supporting_data = []
+                if patterns and i < len(patterns):
+                    supporting_data.append(patterns[i].get("description", "Customer feedback pattern")[:80])
+                else:
+                    supporting_data.append(f"{company} customer feedback analysis #{i+1}")
 
                 opportunities.append({
                     "title": title,
                     "description": description,
-                    "category": category,
+                    "category": template["category"],
                     "priority": priority,
                     "impact_score": impact,
-                    "effort_estimate": "medium",
-                    "timeline": "short-term",
-                    "supporting_data": [pattern["description"][:50] + "..."],
-                    "expected_outcome": f"Improved user experience for {company}'s {product}",
-                    "success_metrics": ["user satisfaction", "engagement metrics"],
-                    "priority_score": impact / 2
+                    "effort_estimate": effort,
+                    "timeline": timeline,
+                    "supporting_data": supporting_data,
+                    "expected_outcome": f"Enhanced {product} experience for {company} customers",
+                    "success_metrics": ["user satisfaction score", "engagement rate", "feature adoption"],
+                    "risks": ["resource constraints", "timeline pressure"]
                 })
 
             return json.dumps({"opportunities": opportunities})

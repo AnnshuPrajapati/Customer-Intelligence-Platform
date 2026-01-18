@@ -60,6 +60,28 @@ class SentimentAnalyzerAgent(BaseAgent):
         }
 
         Be precise, objective, and base your analysis on the actual content of the feedback.
+
+        CONFIDENCE SCORING GUIDELINES:
+
+        Calculate confidence (0.0-1.0) based on:
+
+        Sample Size:
+        - 100+ items: 0.85-0.95 (high confidence)
+        - 50-99 items: 0.70-0.85 (good confidence)
+        - 20-49 items: 0.60-0.75 (moderate confidence)
+        - <20 items: 0.40-0.60 (low confidence)
+
+        Consistency:
+        - Clear consensus (80%+ one way): +0.05 to +0.10
+        - Mixed signals (50-70% split): -0.10 to -0.15
+
+        Examples:
+        - 150 items, 85% positive → confidence: 0.90
+        - 150 items, 55/45 split → confidence: 0.70
+        - 45 items, 80% positive → confidence: 0.75
+        - 12 items, 90% positive → confidence: 0.55
+
+        Confidence reflects analysis certainty, not sentiment positivity.
         """
 
         super().__init__(
@@ -161,7 +183,8 @@ class SentimentAnalyzerAgent(BaseAgent):
         full_context = {
             "feedback_context": context,
             "company_name": state.get("company_name", "Unknown Company"),
-            "product_name": state.get("product_name", "Unknown Product")
+            "product_name": state.get("product_name", "Unknown Product"),
+            "sample_size": len(feedback_data)  # Pass actual sample size for confidence calculation
         }
         return self.execute(task, full_context)
 
