@@ -225,9 +225,9 @@ def run_analysis(company: str, product: str, data_sources: list):
         status_text.text("Evaluating results...")
         progress_bar.progress(80)
 
-        # Debug: Check results type
+        # Debug: Check results structure
         print(f"DEBUG: results type: {type(results)}")
-        print(f"DEBUG: results value: {results}")
+        print(f"DEBUG: results keys: {list(results.keys()) if isinstance(results, dict) else 'Not a dict'}")
 
         # Ensure results is a dictionary
         if not isinstance(results, dict):
@@ -239,8 +239,23 @@ def run_analysis(company: str, product: str, data_sources: list):
                 "data_sources": data_sources,
                 "current_step": "error",
                 "errors": [f"Invalid results type: {type(results)}"],
-                "performance_metrics": {"error": "Invalid results"}
+                "performance_metrics": {"error": "Invalid results"},
+                "strategy_recommendations": [],
+                "executive_summary": "Analysis failed due to data processing error."
             }
+
+        # Clean up results - remove duplicate keys and ensure proper structure
+        if 'strategy_recommendations' in results and isinstance(results['strategy_recommendations'], list):
+            # Find the non-empty strategy_recommendations
+            if len(results['strategy_recommendations']) == 0:
+                # Look for nested strategy_recommendations
+                for key, value in results.items():
+                    if isinstance(value, dict) and 'strategy_recommendations' in value:
+                        if len(value['strategy_recommendations']) > 0:
+                            results['strategy_recommendations'] = value['strategy_recommendations']
+                            break
+
+        print(f"DEBUG: final strategy_recommendations: {len(results.get('strategy_recommendations', []))}")
 
         # Evaluate results
         evaluation = evaluator.evaluate_workflow_run(results)
