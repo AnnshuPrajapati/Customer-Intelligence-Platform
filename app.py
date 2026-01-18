@@ -244,18 +244,29 @@ def run_analysis(company: str, product: str, data_sources: list):
                 "executive_summary": "Analysis failed due to data processing error."
             }
 
-        # Clean up results - remove duplicate keys and ensure proper structure
-        if 'strategy_recommendations' in results and isinstance(results['strategy_recommendations'], list):
-            # Find the non-empty strategy_recommendations
-            if len(results['strategy_recommendations']) == 0:
-                # Look for nested strategy_recommendations
-                for key, value in results.items():
-                    if isinstance(value, dict) and 'strategy_recommendations' in value:
-                        if len(value['strategy_recommendations']) > 0:
-                            results['strategy_recommendations'] = value['strategy_recommendations']
-                            break
+        # Clean up results - handle complex nested structure
+        print(f"DEBUG: Raw results structure check")
 
-        print(f"DEBUG: final strategy_recommendations: {len(results.get('strategy_recommendations', []))}")
+        # The results seem to have duplicate keys, let's find all strategy_recommendations
+        strategy_lists = []
+        for key, value in results.items():
+            if key == 'strategy_recommendations' and isinstance(value, list):
+                strategy_lists.append(value)
+                print(f"DEBUG: Found strategy_recommendations with {len(value)} items")
+
+        # Use the non-empty one if available
+        if len(strategy_lists) > 1:
+            for strategy_list in strategy_lists:
+                if len(strategy_list) > 0:
+                    results['strategy_recommendations'] = strategy_list
+                    print(f"DEBUG: Using non-empty strategy list with {len(strategy_list)} items")
+                    break
+        elif len(strategy_lists) == 1:
+            results['strategy_recommendations'] = strategy_lists[0]
+            print(f"DEBUG: Using single strategy list with {len(strategy_lists[0])} items")
+
+        print(f"DEBUG: Final strategy_recommendations count: {len(results.get('strategy_recommendations', []))}")
+        print(f"DEBUG: Strategy content: {results.get('strategy_recommendations', [])}")
 
         # Evaluate results
         evaluation = evaluator.evaluate_workflow_run(results)
