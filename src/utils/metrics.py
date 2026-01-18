@@ -439,3 +439,4 @@ class WorkflowEvaluator:
             trends["improvement_trend"] = np.polyfit(range(len(recent_scores)), recent_scores, 1)[0]
 
         return trends
+

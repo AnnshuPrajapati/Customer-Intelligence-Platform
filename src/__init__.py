@@ -6,3 +6,4 @@ customer feedback and generates strategic insights.
 """
 
 __version__ = "1.0.0"
+

@@ -171,3 +171,4 @@ if __name__ == "__main__":
         print(f"⚠️  Orchestrator initialization failed (expected without API key): {e}")
 
     print("✓ Smoke test completed successfully!")
+
