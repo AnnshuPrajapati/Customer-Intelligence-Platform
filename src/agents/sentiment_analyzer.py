@@ -6,6 +6,7 @@ sentiment scores, and key topics from customer feedback.
 """
 
 import json
+import re
 from typing import Any, Dict, List
 
 from rich.console import Console
@@ -27,32 +28,35 @@ class SentimentAnalyzerAgent(BaseAgent):
     def __init__(self):
         """Initialize the Sentiment Analyzer Agent with specialized system prompt."""
         system_prompt = """
-        You are a Sentiment Analysis Specialist. Analyze customer feedback to:
+        You are a Sentiment Analysis Specialist. Analyze customer feedback and respond with ONLY valid JSON.
 
-        1. Determine overall sentiment: positive, negative, or neutral
-        2. Calculate sentiment score: -1.0 (very negative) to +1.0 (very positive)
-        3. Identify emotional components with intensity scores (0.0 to 1.0):
-           - frustration, delight, confusion, satisfaction, anger, disappointment, excitement, indifference
-        4. Extract key topics and themes mentioned
-        5. Provide confidence level for your analysis
+        CRITICAL: Respond with ONLY valid JSON. No explanations, no markdown, no preamble. Start with { and end with }.
 
-        Output your analysis as valid JSON with this exact structure:
+        Analyze customer feedback to determine:
+        1. overall_sentiment: "positive", "negative", or "neutral"
+        2. sentiment_score: -1.0 (very negative) to +1.0 (very positive)
+        3. emotions: Object with intensity scores (0.0-1.0) for frustration, delight, confusion, satisfaction, anger, disappointment, excitement, indifference
+        4. key_topics: Array of 3-5 key topics/themes mentioned
+        5. confidence: 0.0-1.0 confidence level based on sample size and analysis clarity
+        6. analysis_summary: Brief summary of sentiment analysis
+
+        Required JSON structure:
         {
           "overall_sentiment": "positive|negative|neutral",
           "sentiment_score": -1.0 to 1.0,
           "emotions": {
-            "frustration": 0.0-1.0,
-            "delight": 0.0-1.0,
-            "confusion": 0.0-1.0,
-            "satisfaction": 0.0-1.0,
-            "anger": 0.0-1.0,
-            "disappointment": 0.0-1.0,
-            "excitement": 0.0-1.0,
-            "indifference": 0.0-1.0
+            "frustration": 0.0,
+            "delight": 0.0,
+            "confusion": 0.0,
+            "satisfaction": 0.0,
+            "anger": 0.0,
+            "disappointment": 0.0,
+            "excitement": 0.0,
+            "indifference": 0.0
           },
           "key_topics": ["topic1", "topic2", "topic3"],
-          "confidence": 0.0-1.0,
-          "analysis_summary": "Brief summary of sentiment analysis"
+          "confidence": 0.75,
+          "analysis_summary": "Brief summary"
         }
 
         Be precise, objective, and base your analysis on the actual content of the feedback.
@@ -91,7 +95,7 @@ class SentimentAnalyzerAgent(BaseAgent):
             self.console.print(f"Analyzing sentiment in [green]{len(raw_data)}[/green] feedback items...")
 
             # Analyze sentiment using Claude
-            analysis_result = self._analyze_sentiment(raw_data, data_summary)
+            analysis_result = self._analyze_sentiment(raw_data, data_summary, state)
 
             # Structure the results
             structured_results = self._structure_results(analysis_result)
@@ -114,7 +118,7 @@ class SentimentAnalyzerAgent(BaseAgent):
             self.console.print(f"[bold red]❌ Error: {error_msg}[/bold red]")
             return state
 
-    def _analyze_sentiment(self, feedback_data: List[Dict[str, Any]], data_summary: Dict[str, Any]) -> str:
+    def _analyze_sentiment(self, feedback_data: List[Dict[str, Any]], data_summary: Dict[str, Any], state: Dict[str, Any]) -> str:
         """
         Send feedback data to Claude for comprehensive sentiment analysis.
 
@@ -127,7 +131,7 @@ class SentimentAnalyzerAgent(BaseAgent):
         """
         # Prepare feedback text for analysis
         feedback_texts = []
-        for item in feedback_data[:50]:  # Limit to first 50 items for token efficiency
+        for item in feedback_data[:100]:  # Increased to 100 items for better analysis
             text = self._extract_text_from_feedback(item)
             if text:
                 feedback_texts.append(f"• {text[:200]}...")  # Truncate long texts
@@ -192,15 +196,53 @@ class SentimentAnalyzerAgent(BaseAgent):
             Structured sentiment analysis results
         """
         try:
-            # Extract JSON from response (Claude might add extra text)
-            json_start = analysis_response.find('{')
-            json_end = analysis_response.rfind('}') + 1
+            # 3-tier JSON extraction for robustness
+            analysis_data = None
 
-            if json_start == -1 or json_end == 0:
-                raise ValueError("No JSON found in response")
+            # Method 1: Direct JSON parse
+            try:
+                analysis_data = json.loads(analysis_response.strip())
+                self.logger.debug("JSON parsed directly")
+            except json.JSONDecodeError:
+                pass
 
-            json_str = analysis_response[json_start:json_end]
-            analysis_data = json.loads(json_str)
+            # Method 2: Extract from markdown code blocks
+            if analysis_data is None:
+                json_match = re.search(r'```(?:json)?\s*\n(.*?)\n```', analysis_response, re.DOTALL)
+                if json_match:
+                    try:
+                        analysis_data = json.loads(json_match.group(1).strip())
+                        self.logger.debug("JSON extracted from markdown block")
+                    except json.JSONDecodeError:
+                        pass
+
+            # Method 3: Brace-matching algorithm
+            if analysis_data is None:
+                json_start = analysis_response.find('{')
+                if json_start != -1:
+                    brace_count = 0
+                    json_end = json_start
+
+                    for i, char in enumerate(analysis_response[json_start:], json_start):
+                        if char == '{':
+                            brace_count += 1
+                        elif char == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                json_end = i + 1
+                                break
+
+                    if json_end > json_start:
+                        json_str = analysis_response[json_start:json_end]
+                        try:
+                            analysis_data = json.loads(json_str)
+                            self.logger.debug("JSON extracted using brace matching")
+                        except json.JSONDecodeError as e:
+                            self.logger.warning(f"Brace matching failed: {e}")
+                            raise ValueError(f"No valid JSON found in response after trying 3 methods")
+
+            if analysis_data is None:
+                raise ValueError("No JSON found in response after trying 3 parsing methods")
 
             # Validate required fields
             required_fields = ["overall_sentiment", "sentiment_score", "emotions", "key_topics"]
@@ -208,11 +250,17 @@ class SentimentAnalyzerAgent(BaseAgent):
                 if field not in analysis_data:
                     raise ValueError(f"Missing required field: {field}")
 
+            self.logger.info(f"Successfully parsed sentiment analysis with confidence: {analysis_data.get('confidence', 'N/A')}")
+
+            # Extract confidence with proper validation
+            confidence = float(analysis_data.get("confidence", 0.75))
+            confidence = max(0.0, min(1.0, confidence))  # Clamp to 0.0-1.0 range
+
             # Create overall results summary
             overall = {
                 "overall_sentiment": analysis_data["overall_sentiment"],
                 "sentiment_score": analysis_data["sentiment_score"],
-                "confidence": analysis_data.get("confidence", 0.8),
+                "confidence": confidence,
                 "analysis_summary": analysis_data.get("analysis_summary", ""),
                 "total_feedback_analyzed": analysis_data.get("total_feedback_analyzed", 0)
             }
@@ -240,8 +288,8 @@ class SentimentAnalyzerAgent(BaseAgent):
                 "overall": {
                     "overall_sentiment": "neutral",
                     "sentiment_score": 0.0,
-                    "confidence": 0.3,
-                    "analysis_summary": "Analysis failed due to parsing error",
+                    "confidence": 0.5,  # Higher confidence for fallback
+                    "analysis_summary": "Analysis failed due to parsing error - using fallback results",
                     "total_feedback_analyzed": 0
                 },
                 "breakdown": {

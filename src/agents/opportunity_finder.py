@@ -6,6 +6,7 @@ patterns, transforming insights into actionable recommendations.
 """
 
 import json
+import re
 from typing import Any, Dict, List
 
 from rich.console import Console
@@ -27,7 +28,11 @@ class OpportunityFinderAgent(BaseAgent):
     def __init__(self):
         """Initialize the Opportunity Finder Agent with specialized system prompt."""
         system_prompt = """
-        You are an Opportunity Finding Specialist. Transform customer feedback patterns into actionable business opportunities.
+        You are an Opportunity Finding Specialist. Transform customer feedback patterns into actionable business opportunities. Respond with ONLY valid JSON.
+
+        CRITICAL: You MUST respond with ONLY valid JSON. No explanations, no markdown, no preamble. Start with { and end with }.
+
+        Generate 5-8 specific, unique opportunities based on the actual patterns provided. Each opportunity must be different and address specific customer needs. NO generic opportunities like 'Improve customer satisfaction'.
 
         Your role is to:
         1. Analyze pain points and convert them into product improvement opportunities
@@ -82,7 +87,7 @@ class OpportunityFinderAgent(BaseAgent):
             name="opportunity_finder",
             role="Opportunity Finding Specialist",
             system_prompt=system_prompt,
-            temperature=0.6  # Creative opportunity identification
+            temperature=0.7  # Increased for more varied, creative opportunities
         )
 
         self.console = Console()
@@ -150,47 +155,84 @@ class OpportunityFinderAgent(BaseAgent):
         Returns:
             Claude's JSON response as string
         """
-        # Prepare patterns summary for Claude
+        # Prepare detailed patterns summary for Claude (increased to 20 patterns)
         patterns_summary = []
-        for pattern in patterns[:15]:  # Limit for token efficiency
-            summary = f"• {pattern['pattern_type']}: {pattern['description']} (freq: {pattern['frequency']}, severity: {pattern['severity']})"
+        pattern_stats = {
+            "pain_points": 0,
+            "feature_requests": 0,
+            "bug_reports": 0,
+            "usability_issues": 0,
+            "critical_patterns": 0,
+            "high_impact": 0
+        }
+
+        for pattern in patterns[:20]:  # Increased limit for better context
+            pattern_type = pattern.get('pattern_type', 'unknown')
+            severity = pattern.get('severity', 'medium')
+            impact_score = pattern.get('impact_score', 0)
+
+            # Count pattern types and severity
+            if pattern_type == 'pain_point':
+                pattern_stats['pain_points'] += 1
+            elif pattern_type == 'feature_request':
+                pattern_stats['feature_requests'] += 1
+            elif pattern_type == 'bug_report':
+                pattern_stats['bug_reports'] += 1
+            elif pattern_type == 'usability_issue':
+                pattern_stats['usability_issues'] += 1
+
+            if severity == 'critical':
+                pattern_stats['critical_patterns'] += 1
+            if impact_score >= 7:
+                pattern_stats['high_impact'] += 1
+
+            # Include examples if available
+            examples = pattern.get('examples', [])
+            examples_str = f" Examples: {examples[:2]}" if examples else ""
+
+            summary = f"• {pattern_type}: {pattern['description']} (freq: {pattern['frequency']}, severity: {severity}, impact: {impact_score}){examples_str}"
             patterns_summary.append(summary)
 
         context = f"""
-        Analyzing {len(patterns)} customer feedback patterns for business opportunities.
+        Analyzing {len(patterns)} customer feedback patterns for {state.get('company_name', 'Unknown Company')}'s {state.get('product_name', 'Unknown Product')} to identify business opportunities.
 
         Sentiment Overview:
         - Overall Sentiment: {sentiment_context.get('overall_sentiment', 'unknown')}
         - Sentiment Score: {sentiment_context.get('sentiment_score', 0.0)}
         - Key Topics: {sentiment_context.get('key_topics', [])}
 
-        Trend Summary:
-        - Total Patterns: {trends.get('total_patterns', 0)}
-        - High Impact Patterns: {trends.get('high_impact_patterns', 0)}
-        - Critical Issues: {trends.get('critical_patterns', 0)}
+        Pattern Statistics:
+        - Total Patterns: {len(patterns)}
+        - Pain Points: {pattern_stats['pain_points']}
+        - Feature Requests: {pattern_stats['feature_requests']}
+        - Bug Reports: {pattern_stats['bug_reports']}
+        - Usability Issues: {pattern_stats['usability_issues']}
+        - Critical Severity: {pattern_stats['critical_patterns']}
+        - High Impact (7+): {pattern_stats['high_impact']}
 
-        Key Patterns:
+        Key Patterns (Top 20):
         {chr(10).join(patterns_summary)}
         """
 
         task = f"""
-        Transform these customer feedback patterns into actionable business opportunities. Consider:
+        Transform these specific customer feedback patterns into 5-8 actionable business opportunities for {state.get('company_name', 'the company')}'s {state.get('product_name', 'product')}.
 
-        1. Pain points → Product improvements or service enhancements
-        2. Feature requests → New product capabilities
-        3. Positive patterns → Areas to double down on
-        4. Technical issues → Quality improvements
-        5. Market gaps → Competitive advantages
+        CRITICAL REQUIREMENTS:
+        - Generate EXACTLY 5-8 unique, specific opportunities
+        - Each opportunity must address a SPECIFIC pattern from the list above
+        - NO generic opportunities like "Improve customer satisfaction"
+        - Each opportunity must have a clear, actionable title and detailed description
+        - Base opportunities directly on the pain points, feature requests, and issues identified
 
         For each opportunity, assess:
-        - Business impact and priority
-        - Implementation effort and feasibility
-        - Timeline and resource requirements
-        - Supporting evidence and expected outcomes
-        - Potential risks and success metrics
+        - Business impact and priority (high/medium/low)
+        - Implementation effort (small/medium/large)
+        - Timeline (immediate/short-term/long-term)
+        - Supporting evidence from the specific patterns above
+        - Expected outcomes and success metrics
+        - Potential risks
 
-        Focus on opportunities that will drive customer satisfaction and business growth.
-        Provide comprehensive opportunity analysis in the specified JSON format.
+        Focus on opportunities that will drive customer satisfaction and business growth. Be specific and actionable.
         """
 
         # Include company and product info for mock response generation
@@ -212,24 +254,65 @@ class OpportunityFinderAgent(BaseAgent):
             List of structured opportunity dictionaries
         """
         try:
-            # Extract JSON from response
-            json_start = analysis_response.find('{')
-            json_end = analysis_response.rfind('}') + 1
+            # 3-tier JSON extraction for robustness
+            analysis_data = None
 
-            if json_start == -1 or json_end == 0:
-                raise ValueError("No JSON found in response")
+            # Method 1: Direct JSON parse
+            try:
+                analysis_data = json.loads(analysis_response.strip())
+                self.logger.debug("Opportunity JSON parsed directly")
+            except json.JSONDecodeError:
+                pass
 
-            json_str = analysis_response[json_start:json_end]
-            analysis_data = json.loads(json_str)
+            # Method 2: Extract from markdown code blocks
+            if analysis_data is None:
+                json_match = re.search(r'```(?:json)?\s*\n(.*?)\n```', analysis_response, re.DOTALL)
+                if json_match:
+                    try:
+                        analysis_data = json.loads(json_match.group(1).strip())
+                        self.logger.debug("Opportunity JSON extracted from markdown block")
+                    except json.JSONDecodeError:
+                        pass
+
+            # Method 3: Brace-matching algorithm
+            if analysis_data is None:
+                json_start = analysis_response.find('{')
+                if json_start != -1:
+                    brace_count = 0
+                    json_end = json_start
+
+                    for i, char in enumerate(analysis_response[json_start:], json_start):
+                        if char == '{':
+                            brace_count += 1
+                        elif char == '}':
+                            brace_count -= 1
+                            if brace_count == 0:
+                                json_end = i + 1
+                                break
+
+                    if json_end > json_start:
+                        json_str = analysis_response[json_start:json_end]
+                        try:
+                            analysis_data = json.loads(json_str)
+                            self.logger.debug("Opportunity JSON extracted using brace matching")
+                        except json.JSONDecodeError as e:
+                            self.logger.warning(f"Opportunity brace matching failed: {e}")
+                            raise ValueError(f"No valid JSON found in opportunity response after trying 3 methods")
+
+            if analysis_data is None:
+                raise ValueError("No JSON found in opportunity response after trying 3 parsing methods")
 
             opportunities = analysis_data.get("opportunities", [])
 
             # Validate and enhance opportunities
             validated_opportunities = []
-            for opp in opportunities:
+            for i, opp in enumerate(opportunities):
                 if self._validate_opportunity(opp):
                     enhanced_opp = self._enhance_opportunity(opp)
                     validated_opportunities.append(enhanced_opp)
+                    self.logger.debug(f"Validated opportunity {i+1}: {opp.get('title', 'Unknown')}")
+                else:
+                    self.logger.warning(f"Invalid opportunity {i+1}: {opp.get('title', 'Unknown')} - missing required fields")
 
             return validated_opportunities
 
@@ -237,8 +320,9 @@ class OpportunityFinderAgent(BaseAgent):
             self.logger.warning(f"Failed to parse opportunity analysis JSON: {e}")
             self.logger.info(f"Raw response: {analysis_response[:500]}...")
 
-            # Return fallback opportunities
-            return self._generate_fallback_opportunities()
+            # Generate pattern-based fallback opportunities
+            self.logger.warning("Using pattern-based fallback opportunities")
+            return self._generate_pattern_based_opportunities(state)
 
     def _validate_opportunity(self, opportunity: Dict[str, Any]) -> bool:
         """
@@ -308,9 +392,77 @@ class OpportunityFinderAgent(BaseAgent):
 
         return ranked
 
+    def _generate_pattern_based_opportunities(self, state: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Generate pattern-based fallback opportunities when analysis fails.
+
+        Args:
+            state: Workflow state containing patterns and context
+
+        Returns:
+            List of pattern-based opportunity dictionaries
+        """
+        patterns = state.get("patterns", [])
+        company_name = state.get("company_name", "Unknown Company")
+        product_name = state.get("product_name", "Unknown Product")
+
+        opportunities = []
+
+        # Generate opportunities based on available patterns
+        for i, pattern in enumerate(patterns[:5]):  # Use up to 5 patterns
+            pattern_type = pattern.get('pattern_type', 'pain_point')
+            description = pattern.get('description', 'General improvement area')
+
+            if pattern_type == 'pain_point':
+                title = f"Address {description.lower()}"
+                category = "product"
+                priority = "high"
+                impact_score = 8
+            elif pattern_type == 'feature_request':
+                title = f"Implement {description.lower()}"
+                category = "feature"
+                priority = "medium"
+                impact_score = 7
+            elif pattern_type == 'bug_report':
+                title = f"Fix {description.lower()}"
+                category = "technical"
+                priority = "high"
+                impact_score = 8
+            else:
+                title = f"Improve {description.lower()}"
+                category = "product"
+                priority = "medium"
+                impact_score = 6
+
+            opportunity = {
+                "title": title,
+                "description": f"Address the customer need: {description}",
+                "category": category,
+                "priority": priority,
+                "impact_score": impact_score,
+                "effort_estimate": "medium",
+                "timeline": "short-term",
+                "supporting_data": [f"Pattern: {description}"],
+                "expected_outcome": f"Improved customer experience for {company_name}'s {product_name}",
+                "success_metrics": ["Customer satisfaction", "Usage metrics"],
+                "risks": ["Implementation complexity", "Resource requirements"],
+                "effort_score": 2,
+                "priority_score": impact_score / 2,
+                "timeline_score": 2,
+                "rank": i + 1
+            }
+            opportunities.append(opportunity)
+
+        # If no patterns available, fall back to generic opportunities
+        if not opportunities:
+            self.logger.warning("No patterns available, using generic fallback opportunities")
+            opportunities = self._generate_fallback_opportunities()
+
+        return opportunities
+
     def _generate_fallback_opportunities(self) -> List[Dict[str, Any]]:
         """
-        Generate basic fallback opportunities when analysis fails.
+        Generate basic fallback opportunities when no patterns are available.
 
         Returns:
             List of basic opportunity dictionaries

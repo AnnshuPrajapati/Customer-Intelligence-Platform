@@ -108,7 +108,7 @@ class BaseAgent(ABC):
         """
         Initialize the base agent with multi-provider LLM support.
 
-        Supports: Anthropic Claude → OpenAI GPT-4 → Google Gemini → Ollama → Mock fallback
+        Supports: Google Gemini → OpenAI GPT-4 → Anthropic Claude → Ollama → Mock fallback
 
         Args:
             name: Unique name identifier for the agent
@@ -133,42 +133,14 @@ class BaseAgent(ABC):
 
     def _initialize_llm(self):
         """
-        Initialize LLM with fallback chain: Claude → GPT-4 → Gemini → Ollama → Mock
+        Initialize LLM with fallback chain: Gemini → GPT-4 → Claude → Ollama → Mock
 
         Returns:
             Tuple of (llm_instance, provider_name)
         """
         import os
 
-        # 1. Try Anthropic Claude (most expensive but best quality)
-        if ANTHROPIC_AVAILABLE and os.getenv("ANTHROPIC_API_KEY"):
-            try:
-                llm = ChatAnthropic(
-                    model="claude-3-5-sonnet-20241022",
-                    temperature=self.temperature,
-                    max_tokens=4096
-                )
-                # Test the connection
-                llm.invoke("test")
-                return llm, "Anthropic Claude"
-            except Exception as e:
-                self.logger.warning(f"Claude initialization failed: {e}")
-
-        # 2. Try OpenAI GPT-4 (very affordable, great quality)
-        if OPENAI_AVAILABLE and os.getenv("OPENAI_API_KEY"):
-            try:
-                llm = ChatOpenAI(
-                    model="gpt-4o-mini",  # Cheapest GPT-4 model
-                    temperature=self.temperature,
-                    max_tokens=4096
-                )
-                # Test the connection
-                llm.invoke("test")
-                return llm, "OpenAI GPT-4"
-            except Exception as e:
-                self.logger.warning(f"GPT-4 initialization failed: {e}")
-
-        # 3. Try Google Gemini (new SDK - preferred)
+        # 1. Try Google Gemini (new SDK - now preferred, free tier available)
         if GOOGLE_GENAI_AVAILABLE and os.getenv("GOOGLE_API_KEY"):
             try:
                 # Initialize the new Google GenAI client
@@ -185,7 +157,7 @@ class BaseAgent(ABC):
             except Exception as e:
                 self.logger.warning(f"New Gemini API failed: {e}")
 
-        # 4. Try Google Gemini (LangChain fallback)
+        # 2. Try Google Gemini (LangChain fallback)
         if GOOGLE_LANGCHAIN_AVAILABLE and os.getenv("GOOGLE_API_KEY"):
             try:
                 llm = ChatGoogleGenerativeAI(
@@ -199,7 +171,35 @@ class BaseAgent(ABC):
             except Exception as e:
                 self.logger.warning(f"Gemini LangChain fallback failed: {e}")
 
-        # 4. Try Ollama (completely free, local models)
+        # 3. Try OpenAI GPT-4 (affordable, great quality)
+        if OPENAI_AVAILABLE and os.getenv("OPENAI_API_KEY"):
+            try:
+                llm = ChatOpenAI(
+                    model="gpt-4o-mini",  # Cheapest GPT-4 model
+                    temperature=self.temperature,
+                    max_tokens=4096
+                )
+                # Test the connection
+                llm.invoke("test")
+                return llm, "OpenAI GPT-4"
+            except Exception as e:
+                self.logger.warning(f"GPT-4 initialization failed: {e}")
+
+        # 4. Try Anthropic Claude (most expensive, best quality - last resort)
+        if ANTHROPIC_AVAILABLE and os.getenv("ANTHROPIC_API_KEY"):
+            try:
+                llm = ChatAnthropic(
+                    model="claude-3-5-sonnet-20241022",
+                    temperature=self.temperature,
+                    max_tokens=4096
+                )
+                # Test the connection
+                llm.invoke("test")
+                return llm, "Anthropic Claude"
+            except Exception as e:
+                self.logger.warning(f"Claude initialization failed: {e}")
+
+        # 5. Try Ollama (completely free, local models)
         if OLLAMA_AVAILABLE:
             try:
                 llm = ChatOllama(
@@ -212,7 +212,7 @@ class BaseAgent(ABC):
             except Exception as e:
                 self.logger.warning(f"Ollama initialization failed: {e}")
 
-        # 5. Fallback to mock mode (completely free)
+        # 6. Fallback to mock mode (completely free)
         self.logger.warning(f"No LLM providers available, using mock mode for agent '{self.name}'")
         return None, "Mock Mode"
 

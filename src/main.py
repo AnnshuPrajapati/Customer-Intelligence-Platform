@@ -28,21 +28,32 @@ def main():
 
     console = Console()
 
-    # Check for required API key
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        console.print("[yellow]⚠️  No Anthropic API key found - running in DEMO mode![/yellow]")
+    # Check for required API key (prioritize Gemini, then fallbacks)
+    gemini_key = os.getenv("GOOGLE_API_KEY")
+    openai_key = os.getenv("OPENAI_API_KEY")
+    claude_key = os.getenv("ANTHROPIC_API_KEY")
+
+    if gemini_key:
+        console.print("[green]✓ Google API key found - using Gemini AI (free tier available)![/green]")
+    elif openai_key:
+        console.print("[green]✓ OpenAI API key found - using GPT-4![/green]")
+    elif claude_key:
+        console.print("[green]✓ Anthropic API key found - using Claude![/green]")
+    else:
+        console.print("[yellow]⚠️  No AI API keys found - running in DEMO mode![/yellow]")
         console.print("[blue]This will use mock AI responses for demonstration purposes.[/blue]")
         console.print("")
-        console.print("[cyan]To get real AI responses:[/cyan]")
-        console.print("1. Visit: https://console.anthropic.com/")
-        console.print("2. Sign up for a free account (get $5 credits)")
-        console.print("3. Get your API key and add to .env file")
+        console.print("[cyan]To get real AI responses (free options available):[/cyan]")
+        console.print("1. Visit: https://makersuite.google.com/app/apikey")
+        console.print("2. Create a free Google AI API key (1M tokens/month free)")
+        console.print("3. Add GOOGLE_API_KEY to your .env file")
         console.print("4. Re-run for full AI-powered analysis!")
         console.print("")
+        console.print("[cyan]Alternative options:[/cyan]")
+        console.print("- OpenAI: https://platform.openai.com/api-keys ($5 free credits)")
+        console.print("- Anthropic: https://console.anthropic.com/ ($5 free credits)")
+        console.print("")
         os.environ["MOCK_MODE"] = "true"  # Set mock mode
-    else:
-        console.print("[green]✓ Anthropic API key found - running with AI![/green]")
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(

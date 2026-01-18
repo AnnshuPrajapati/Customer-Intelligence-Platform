@@ -3,10 +3,10 @@ langgraph>=0.2.0
 langchain>=0.3.0
 
 # LLM Providers (choose one or more)
-langchain-anthropic>=0.2.0    # Claude (paid, best quality)
-langchain-openai>=0.2.0       # GPT-4 (affordable, great quality)
+google-genai>=0.8.0          # Gemini (official SDK - RECOMMENDED, free tier)
 langchain-google-genai>=0.2.0 # Gemini (LangChain wrapper)
-google-genai>=0.8.0          # Gemini (official SDK - RECOMMENDED)
+langchain-openai>=0.2.0       # GPT-4 (affordable, great quality)
+langchain-anthropic>=0.2.0    # Claude (paid, best quality)
 langchain-ollama>=0.2.0       # Local models (completely free)
 
 # Anthropic Claude

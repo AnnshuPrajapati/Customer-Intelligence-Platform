@@ -5,7 +5,7 @@
 ## 🌟 Features
 
 - **Multi-Agent AI Pipeline**: Data Collection → Sentiment Analysis → Pattern Detection → Opportunity Finding → Strategy Generation
-- **Multiple AI Providers**: Claude (Anthropic), GPT-4 (OpenAI), Gemini (Google), Ollama (Local)
+- **Multiple AI Providers**: Gemini (Google, free tier), GPT-4 (OpenAI), Claude (Anthropic), Ollama (Local)
 - **Advanced Evaluation**: Hallucination detection, coverage metrics, actionability scores
 - **Beautiful Web Interface**: Streamlit app for easy deployment
 - **Comprehensive Reports**: Markdown reports with executive summaries
@@ -123,7 +123,7 @@ customer satisfaction improvements.
 # Choose your AI provider
 GOOGLE_API_KEY=your_gemini_key_here        # FREE tier available
 OPENAI_API_KEY=your_gpt4_key_here          # $5 free credits
-ANTHROPIC_API_KEY=your_claude_key_here     # Paid but best quality
+ANTHROPIC_API_KEY=your_claude_key_here     # Optional - paid, high quality
 
 # Application settings
 LOG_LEVEL=INFO
