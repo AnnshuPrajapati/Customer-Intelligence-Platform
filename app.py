@@ -160,9 +160,8 @@ def main():
                     st.write(f"**Expected Impact:** {rec.get('expected_impact', 'N/A')}")
         else:
             st.info("No strategic recommendations available")
-
-    else:
-        # No analysis completed - show initial interface
+else:
+    # No analysis completed - show initial interface
         with tab1:
             st.header("Analysis Overview")
             st.info("👈 Configure your analysis in the sidebar and click 'Run Analysis' to begin")
