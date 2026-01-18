@@ -40,10 +40,15 @@ def main():
         )
 
         if st.button("🚀 Run Analysis", type="primary"):
-            # Clear previous results before running new analysis
-            st.session_state.analysis_complete = False
-            st.session_state.results = None
-            st.session_state.evaluation = None
+            # Clear ALL previous results before running new analysis
+            keys_to_clear = ['analysis_complete', 'results', 'evaluation', 'last_company', 'last_product']
+            for key in keys_to_clear:
+                if key in st.session_state:
+                    del st.session_state[key]
+
+            # Force clear any remaining state
+            st.session_state.clear()
+
             run_analysis(company, product, data_sources)
 
     # Main content area - always show either initial interface or results
@@ -127,12 +132,6 @@ def run_analysis(company: str, product: str, data_sources: list):
         st.session_state.last_company = company
         st.session_state.last_product = product
 
-        # Debug: Check results structure
-        st.write("DEBUG - Results keys:", list(results.keys()) if results else "None")
-        if results and 'executive_summary' in results:
-            st.write("DEBUG - Executive summary present")
-        if results and 'strategy_recommendations' in results:
-            st.write("DEBUG - Strategy recommendations:", len(results['strategy_recommendations']))
 
         # Clear progress indicators first
         progress_bar.empty()
@@ -152,10 +151,6 @@ def display_results():
     results = st.session_state.results
     evaluation = st.session_state.evaluation
 
-    # Debug what we received
-    st.write("DEBUG display_results - Results keys:", list(results.keys()) if results else "None")
-    st.write("DEBUG display_results - Executive summary:", results.get('executive_summary', 'Not found') if results else "No results")
-    st.write("DEBUG display_results - Strategy recs:", len(results.get('strategy_recommendations', [])) if results else "No results")
 
 
     # Create tabs for results

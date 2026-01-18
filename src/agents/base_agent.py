@@ -289,6 +289,8 @@ class BaseAgent(ABC):
             Mock response string
         """
         agent_name = self.name
+
+
         company = context.get('company_name', 'Unknown Company')
         product = context.get('product_name', 'Unknown Product')
 
