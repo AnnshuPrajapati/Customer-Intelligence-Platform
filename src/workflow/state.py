@@ -6,6 +6,7 @@ intelligence workflow, including state schemas and state transitions.
 """
 
 from typing import Any, Dict, List, TypedDict
+from datetime import datetime
 
 
 class WorkflowState(TypedDict):
@@ -128,30 +129,6 @@ def update_agent_results(state: WorkflowState, agent_name: str,
     return state
 
 
-def update_agent_results(state: WorkflowState, agent_name: str,
-                        results: Dict[str, Any]) -> WorkflowState:
-    """
-    Update the results of a specific agent in the workflow.
-
-    Args:
-        state: Current workflow state
-        agent_name: Name of the agent
-        results: Results from the agent
-
-    Returns:
-        Updated workflow state
-    """
-    results_key = f"{agent_name}_results"
-    state[results_key] = results
-
-    # Mark agent as completed
-    state = update_agent_state(state, agent_name, {
-        "status": "completed",
-        "end_time": datetime.now(),
-        "results": results
-    })
-
-    return state
 
 
 def add_error(state: WorkflowState, error_message: str) -> WorkflowState:

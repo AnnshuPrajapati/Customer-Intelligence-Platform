@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import sys
 import os
+import time
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -40,12 +41,9 @@ def main():
 
         if st.button("🚀 Run Analysis", type="primary"):
             # Clear previous results before running new analysis
-            if 'analysis_complete' in st.session_state:
-                del st.session_state.analysis_complete
-            if 'results' in st.session_state:
-                del st.session_state.results
-            if 'evaluation' in st.session_state:
-                del st.session_state.evaluation
+            st.session_state.analysis_complete = False
+            st.session_state.results = None
+            st.session_state.evaluation = None
             run_analysis(company, product, data_sources)
 
     # Main content area
@@ -127,8 +125,12 @@ def run_analysis(company: str, product: str, data_sources: list):
         st.session_state.last_company = company
         st.session_state.last_product = product
 
+
         st.success(f"✅ Analysis completed successfully for {company} - {product}!")
-        st.rerun()
+
+        # Clear progress indicators
+        progress_bar.empty()
+        status_text.empty()
 
     except Exception as e:
         st.error(f"❌ Analysis failed: {str(e)}")
@@ -141,6 +143,7 @@ def display_results():
 
     results = st.session_state.results
     evaluation = st.session_state.evaluation
+
 
     # Create tabs for results
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "💭 Sentiment", "🔎 Patterns", "💡 Opportunities", "📋 Strategy"])
@@ -242,13 +245,5 @@ def display_results():
             st.info("No strategic recommendations available")
 
 if __name__ == "__main__":
-    # Always call main() first
     main()
-
-    # Then display results if available
-    if st.session_state.get('analysis_complete', False):
-        display_results()
-    else:
-        # Show initial state message
-        st.info("👈 Configure your analysis in the sidebar and click 'Run Analysis' to begin")
 
