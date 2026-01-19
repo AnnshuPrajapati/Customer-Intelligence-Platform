@@ -243,6 +243,14 @@ def main():
                     st.write(f"- Patterns detected: {len(results.get('patterns', []))}")
                     st.write(f"- Recommendations in results: {len(recommendations)}")
                     st.write(f"- Provider: {results.get('provider', 'unknown')}")
+                    st.write(f"- Executive summary present: {bool(results.get('executive_summary', ''))}")
+                    st.write(f"- Raw state keys: {list(results.keys())}")
+                    if results.get('errors'):
+                        st.write(f"- Errors: {results.get('errors', [])}")
+                    # Show raw recommendations if exists but empty list
+                    if 'strategy_recommendations' in results:
+                        st.write(f"- Strategy recommendations type: {type(results['strategy_recommendations'])}")
+                        st.write(f"- Strategy recommendations value: {results['strategy_recommendations']}")
         else:
             st.info("Run an analysis to see strategy recommendations here")
 

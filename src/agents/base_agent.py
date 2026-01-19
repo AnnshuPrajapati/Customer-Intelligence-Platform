@@ -81,11 +81,21 @@ class GeminiWrapper:
             # Direct string content
             content = str(messages)
 
-        # Call Gemini API
-        response = self.client.models.generate_content(
-            model="gemini-2.0-flash-exp",
-            contents=content
-        )
+        # Call Gemini API (use gemini-1.5-flash for free tier access)
+        try:
+            response = self.client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=content
+            )
+        except Exception as e:
+            # If 429 error, try alternative model
+            if "429" in str(e) or "quota" in str(e).lower() or "RESOURCE_EXHAUSTED" in str(e):
+                response = self.client.models.generate_content(
+                    model="gemini-1.5-pro",
+                    contents=content
+                )
+            else:
+                raise
 
         # Return LangChain-compatible response
         class LangChainResponse:
@@ -159,11 +169,26 @@ class BaseAgent(ABC):
                 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
                 self.logger.info("🧪 Testing Gemini connection...")
-                # Test the connection
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash-exp",
-                    contents="Test connection"
-                )
+                # Test the connection (use gemini-1.5-flash for free tier)
+                try:
+                    response = client.models.generate_content(
+                        model="gemini-1.5-flash",
+                        contents="Test connection"
+                    )
+                except Exception as e:
+                    # If 429/quota error with flash, try pro or fall through to next provider
+                    if "429" in str(e) or "quota" in str(e).lower() or "RESOURCE_EXHAUSTED" in str(e):
+                        self.logger.warning(f"Gemini 1.5-flash quota exceeded, trying 1.5-pro...")
+                        try:
+                            response = client.models.generate_content(
+                                model="gemini-1.5-pro",
+                                contents="Test connection"
+                            )
+                        except Exception as e2:
+                            self.logger.error(f"Gemini 1.5-pro also failed: {str(e2)}")
+                            raise e  # Raise original error to trigger fallback
+                    else:
+                        raise
 
                 self.logger.info("✅ Gemini (new API) initialized successfully!")
                 self.logger.info(f"Test response: {response.text[:100]}...")
@@ -178,7 +203,7 @@ class BaseAgent(ABC):
             try:
                 self.logger.info("🚀 Attempting Gemini LangChain fallback...")
                 llm = ChatGoogleGenerativeAI(
-                    model="gemini-2.0-flash-exp",  # Updated to current production model
+                    model="gemini-1.5-flash",  # Use free tier model
                     temperature=self.temperature,
                     max_tokens=4096
                 )

@@ -188,8 +188,12 @@ class StrategyCreatorAgent(BaseAgent):
             if not recommendations or len(recommendations) == 0:
                 self.console.print("[bold red]⚠️  WARNING: No recommendations generated![/bold red]")
                 self.logger.error("Strategy creator produced 0 recommendations - check logic")
+                self.logger.error(f"Strategy response type: {type(strategy_response)}")
+                self.logger.error(f"Strategy response length: {len(strategy_response) if strategy_response else 0}")
+                self.logger.error(f"Strategy response preview: {str(strategy_response)[:500] if strategy_response else 'None'}")
             else:
                 self.console.print(f"[bold green]✅ Generated {len(recommendations)} recommendations[/bold green]")
+                self.logger.info(f"Successfully created {len(recommendations)} recommendations using {self.provider}")
 
             # Generate and save final report
             self._generate_report(state)

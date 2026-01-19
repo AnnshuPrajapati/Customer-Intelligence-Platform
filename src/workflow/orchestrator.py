@@ -225,10 +225,28 @@ class CustomerIntelligenceOrchestrator:
             # Add performance metrics
             result["performance_metrics"] = self.metrics.get_summary()
             result["workflow_id"] = workflow_id
+            
+            # Track which LLM provider was used (from strategy creator as it's last agent)
+            if hasattr(self.strategy_creator, 'provider'):
+                result["provider"] = self.strategy_creator.provider
+            else:
+                # Fallback: check any agent
+                if hasattr(self.sentiment_analyzer, 'provider'):
+                    result["provider"] = self.sentiment_analyzer.provider
+                else:
+                    result["provider"] = "unknown"
 
             # Validate final results
             hallucination_report = self._validate_final_results(result)
             result["validation_report"] = hallucination_report
+            
+            # Debug logging for recommendations
+            recommendations = result.get("strategy_recommendations", [])
+            if not recommendations or len(recommendations) == 0:
+                self.logger.warning(f"⚠️ No recommendations in final results!")
+                self.logger.info(f"State keys: {list(result.keys())}")
+                self.logger.info(f"Opportunities: {len(result.get('opportunities', []))}")
+                self.logger.info(f"Patterns: {len(result.get('patterns', []))}")
 
             # Success logging
             log_workflow_complete(workflow_id, total_duration, len(result.get("errors", [])))
