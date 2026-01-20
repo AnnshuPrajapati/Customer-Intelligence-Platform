@@ -3,7 +3,7 @@ langgraph>=0.2.0
 langchain>=0.3.0
 
 # LLM Providers (choose one or more)
-google-genai>=0.8.0          # Gemini (official SDK - RECOMMENDED, free tier)
+google-generativeai>=0.8.0         # Gemini (official SDK - RECOMMENDED, free tier)
 langchain-google-genai>=0.2.0 # Gemini (LangChain wrapper)
 langchain-openai>=0.2.0       # GPT-4 (affordable, great quality)
 langchain-anthropic>=0.2.0    # Claude (paid, best quality)
