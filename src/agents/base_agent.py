@@ -91,7 +91,7 @@ class GeminiWrapper:
             # If 429 error, try alternative model
             if "429" in str(e) or "quota" in str(e).lower() or "RESOURCE_EXHAUSTED" in str(e):
                 response = self.client.models.generate_content(
-                    model="gemini-1.5-pro-latest",
+                    model="gemini-1.5-pro",
                     contents=content
                 )
             else:
