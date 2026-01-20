@@ -5,7 +5,7 @@
 
 <div align="center">
 
-**Try it now →** **[Live Demo](https://customer-intelligence-platform.up.railway.app/)**
+**Try it now →** **[Live Demo](https://customer-intelligence-platform-production.up.railway.app)**
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)
 ![LangGraph](https://img.shields.io/badge/LangGraph-0.2.0-green?style=flat-square)
