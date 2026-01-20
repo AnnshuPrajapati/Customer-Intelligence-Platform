@@ -84,14 +84,14 @@ class GeminiWrapper:
         # Call Gemini API (use gemini-1.5-flash for free tier access)
         try:
             response = self.client.models.generate_content(
-                model="gemini-1.5-flash",
+                model="gemini-2.0-flash-exp",
                 contents=content
             )
         except Exception as e:
             # If 429 error, try alternative model
             if "429" in str(e) or "quota" in str(e).lower() or "RESOURCE_EXHAUSTED" in str(e):
                 response = self.client.models.generate_content(
-                    model="gemini-1.5-pro",
+                    model="gemini-1.5-pro-latest",
                     contents=content
                 )
             else:
@@ -172,7 +172,7 @@ class BaseAgent(ABC):
                 # Test the connection (use gemini-1.5-flash for free tier)
                 try:
                     response = client.models.generate_content(
-                        model="gemini-1.5-flash",
+                        model="gemini-2.0-flash-exp",
                         contents="Test connection"
                     )
                 except Exception as e:
@@ -181,7 +181,7 @@ class BaseAgent(ABC):
                         self.logger.warning(f"Gemini 1.5-flash quota exceeded, trying 1.5-pro...")
                         try:
                             response = client.models.generate_content(
-                                model="gemini-1.5-pro",
+                                model="gemini-1.5-pro-latest",
                                 contents="Test connection"
                             )
                         except Exception as e2:
@@ -203,7 +203,7 @@ class BaseAgent(ABC):
             try:
                 self.logger.info("🚀 Attempting Gemini LangChain fallback...")
                 llm = ChatGoogleGenerativeAI(
-                    model="gemini-1.5-flash",  # Use free tier model
+                    model="gemini-2.0-flash-exp",  # Use free tier model
                     temperature=self.temperature,
                     max_tokens=4096
                 )
